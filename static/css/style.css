@@ -1,0 +1,94 @@
+:root{
+    --color-primary: #6c757d;
+    --color-secondary: #212529;
+    --color-tertiary: #f8f9fa;
+    --body: #ffffff;
+    --footer: #aaadaf;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: var(--body);
+}
+
+.prueba{
+    background-image: url("../images/login.jpg");
+    min-height: 788px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+    background-color: var(--body);
+    background-blend-mode: multiply;
+}
+
+.barra{
+    background-color: var(--color-secondary);
+}
+
+ul {
+    list-style-type: none;
+}
+
+.icono-persona{
+    color: var(--color-primary);
+}
+
+.lista-menu:hover {
+    background-color: var(--body);
+    color: var(--color-secondary) !important;
+}
+
+.img-shadow{
+    filter: drop-shadow(
+        0 0 10px rgba(0, 0, 0, .8)
+    );
+}
+
+.cabecera{
+    height: 200px;
+    max-width: 1240px;
+    background-image: url("../images/login.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+    background-blend-mode: multiply;
+}
+
+.header-index{
+    height: 300px;
+    background-image: url("../images/login.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+    background-blend-mode: multiply;
+}
+
+.carta-home:hover {
+    background-color: var(--color-secondary) !important;
+    color: white !important;
+}
+.carta-home a :hover {
+    color: white !important;
+}
+
+.custom{
+    background-color: var(--color-tertiary);
+}
+
+.custom:hover {
+    background-color: var(--color-secondary); /* Cambia el fondo a primary */
+    color: var(--body); /* Cambia el color del texto a light */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+.footer{
+    background-color: var(--footer);
+}

@@ -1,0 +1,28 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block 'title'%} Manual Máquina {% endblock %}
+
+
+{% block 'content' %}
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "info" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+    
+    <div>
+        <h1 class="text-center">Manual Máquina</h1>
+        <div class="container m-3 d-flex">
+            <video class="ms-auto me-auto" width="900" height="500" controls>
+                <source src="{% static "tutoreales/tuto_maquina.mp4" %}" type="video/mp4">
+                Tu navegador no soporta la etiqueta de video.
+            </video>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

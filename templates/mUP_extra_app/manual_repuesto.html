@@ -1,0 +1,29 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block 'title'%} Manual Repuesto {% endblock %}
+
+
+{% block 'content' %}
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "info" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+    
+    <div>
+        <h1 class="text-center">Manual Repuesto</h1>
+        <p class="ms-2 me-2 text-center">Dado a la arquitectura con la que fue construido el software, al entender el funcionamiento del módulo de máquina es posible tener una compresión sólida del funcionamiento del módulo de repuesto.</p>
+        <div class="container m-3 d-flex">
+            <video class="ms-auto me-auto" width="900" height="500" controls>
+                <source src="{% static "tutoreales/tuto_maquina.mp4" %}" type="video/mp4">
+                Tu navegador no soporta la etiqueta de video.
+            </video>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

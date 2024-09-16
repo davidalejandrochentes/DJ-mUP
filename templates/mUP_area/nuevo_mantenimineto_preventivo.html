@@ -1,0 +1,43 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Nuevo Mantenimiento de área{% endblock %}
+
+{% block 'styles' %}
+{% load static %}
+<link rel="stylesheet" href="{% static "css/forms.css" %}">
+{% endblock 'styles' %}
+
+{% block 'content' %}
+
+<div class="container mb-5">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "mantenimientos_area_preventivo" id=area.id %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+    
+    <h2 class="text-center">Nuevo mantenimiento {{ tipo_mantenimiento }} para {{ area }}</h2>
+    <div class="d-flex justify-content-center align-items-center">
+
+        <form class="p-5 rounded-3 bg-body-tertiary shadow-lg" action="" method='POST' enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <div {% if message.tags %} class="alert alert-danger alerta" role="alert"{% endif %}>{{ message }}</div>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <table>
+                {{ form_mant }}
+            </table>
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-secondary">Guardar</button>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

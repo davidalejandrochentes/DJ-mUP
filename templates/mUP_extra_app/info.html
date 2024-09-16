@@ -1,0 +1,74 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block 'title'%} info {% endblock %}
+
+
+{% block 'content' %}
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "index" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+    
+    <div class="container cabecera shadow bg-secondary bg-opacity-50 p-4 bw-5">
+        <h1 class="text-center text-light text-uppercase display-1"><strong>Manuales</strong></h1>
+        <h5 class="text-center text-light text-uppercase">Estúdiese el manual de operaciones del módulo que desee</h5>
+    </div>
+
+    <div class="row mt-5 d-flex justify-content-center align-item-center ps-5 pe-5">
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_area" %}">
+                <img src="{% static "images/area_preventivo.jpeg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">áreas</h5>
+                </div>      
+            </a>
+        </div>
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_maquina" %}">
+                <img src="{% static "images/correctivo.jpg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">maquinarias</h5>
+                </div>      
+            </a>
+        </div>
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_repuesto" %}">
+                <img src="{% static "images/repuesto.jpg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">repuestos</h5>
+                </div>      
+            </a>
+        </div>
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_vehiculo" %}">
+                <img src="{% static "images/mantenimiento-preventivo-autos-1.jpg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">vehículos</h5>
+                </div>      
+            </a>
+        </div>
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_pc" %}">
+                <img src="{% static "images/Mantenimiento-preventivo-PC.jpg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">Equipos de cómputo</h5>
+                </div>      
+            </a>
+        </div>
+        <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
+            <a class="text-decoration-none text-dark" href="{% url "manual_herramienta" %}">
+                <img src="{% static "images/herraminetas.jpg" %}" class="card-img-top" alt="..." style="height: 200px; width: 100%; object-fit: cover;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">Herraminetas</h5>
+                </div>      
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

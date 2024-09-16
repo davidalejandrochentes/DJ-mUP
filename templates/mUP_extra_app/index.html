@@ -1,0 +1,17 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block 'title'%} Index {% endblock %}
+
+{% block 'content' %}
+    <div class="header-index bg-secondary bg-opacity-50 d-flex justify-content-center align-items-center">
+        <h1 class="display-1"><strong> <span class="text-light">m</span><span class="text-danger"><b>UP</b></span> </strong></h1>
+    </div>
+    <p class="text-center mt-2 mb-0 p-4 p-md-2 fst-italic">Lo que nos diferencia como compañía es que queremos dar soluciones a cualquiera que tenga nuestro producto, sin importar dónde lo compró.</p>
+    <div class="row">
+        <img class="col-12 col-md-4 order-1 mt-4 img-shadow" src="{% static "images/soga.png" %}" alt="Innovaplast" style="max-height: 300px;">
+        <img class="col-12 col-md-4 order-md-2 order-last img-shadow" src="{% static "images/flor.png" %}" alt="Innovaplast" style="max-height: 400px;">
+        <img class="col-12 col-md-4 order-3 mt-4 img-shadow" src="{% static "images/malla.png" %}" alt="Innovaplast" style="max-height: 300px;">
+    </div>
+
+{% endblock %}
