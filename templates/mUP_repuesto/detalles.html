@@ -1,0 +1,202 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Detalles Repuesto {% endblock %}
+
+
+{% block 'content' %}
+
+<div class="container">
+
+    <div class="d-flex p-3 justify-content-between">
+        <a class="text-decoration-none text-dark flecha-atras" href="{% url "repuesto_maquina" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+        
+        <div class="pt-2 me-3 me-md-0">
+
+            <button type="button" class="btn custom shadow rounded-pill" onclick="window.location.href='{% url "descargar_excel" id=maquina.id %}'">
+                Descargar <i class="bi bi-box-arrow-down "></i>
+            </button>
+            
+
+            <button type="button" class="btn custom shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-parte">
+                Crear parte de máquina <i class="bi bi-plus-circle-fill"></i>
+            </button>
+            <div class="modal fade" id="modal-parte" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Crear Parte para {{ maquina.nombre }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ part_form }}
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-secondary">Guardar</button>
+                                </div>
+                            </form> 
+                        </div>
+                    </div>
+                </div>
+            </div>    
+            
+            <button type="button" class="btn custom mt-md-0 mt-2 shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-inventario">
+                Inventario de parte de máquina <i class="bi bi-plus-circle-dotted"></i>
+            </button>
+            <div class="modal fade" id="modal-inventario" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Nuevo inventario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <label for="parte-select-inventario" class="form-label">Selecciona la parte para agregar inventario:</label>
+                                <select name="parte" class="form-select mb-2" id="parte-select-inventario" required>
+                                    <option value="" selected disabled>Selecciona una parte</option>
+                                    {% for parte in partes_maquina %}
+                                        <option value="{{ parte.id }}">{{ parte.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                {{ inve_form }} <!-- Renderizar el formulario de inventario -->
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-secondary">Guardar Inventario</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+
+            <button type="button" class="btn custom shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-eliminar-parte">
+                Eliminar parte de máquina <i class="bi bi-archive"></i>
+            </button>
+            <div class="modal fade" id="modal-eliminar-parte" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Eliminar Parte de {{ maquina.nombre }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete"> <!-- Campo oculto para identificar la acción de eliminar parte -->
+                                <label for="parte-select" class="form-label">Selecciona la parte a eliminar:</label>
+                                <select name="parte" class="form-select mb-2" id="parte-select" required>
+                                    <option value="" selected disabled>Selecciona una parte</option>
+                                    {% for parte in partes_maquina %}
+                                        <option value="{{ parte.id }}">{{ parte.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+    </div>
+
+    <div class="mt-2 ps-5 pe-5">
+
+        <h3 class="text-center text-dark fst-italic text-uppercase">{{ maquina.nombre }}</h3>
+        
+        <div class="table-responsive">
+        <table class="table table-striped mt-1 shadow">
+            <thead>
+                <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                    <th>Partes de la {{ maquina.nombre }}</th>
+                    <th>Imagen</th>
+                    <th>Tipo</th>
+                    <th>Rosca</th>
+                    <th>Largo</th>
+                    <th>Und</th>
+                    <th>Cantidad necesaria</th>
+                    <th>Existencia en stock</th>
+                    <th>Salida</th>
+                    <th>Existencia física</th>
+                    <th>Modificar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parte in partes_maquina %}
+                <tr>
+                    <td rowspan="{{ parte.inventario_set.count }}">{{ parte.nombre }}</td>
+                    <td rowspan="{{ parte.inventario_set.count }}">
+                        <button type="button" class="btn btn-secondary btn-sm imagen" data-bs-toggle="modal" data-bs-target="#exampleModal{{ parte.id }}">
+                            <i class="bi bi-image"></i>
+                        </button>
+                        <div class="modal fade" id="exampleModal{{ parte.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Imagen</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <img src="{{ parte.image.url }}" class="img-fluid" alt="Imagen">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    {% for inventario in parte.inventario_set.all %}
+                    {% if forloop.first %}
+                    <td>{{ inventario.tipo }}</td>
+                    <td>{{ inventario.rosca }}</td>
+                    <td>{{ inventario.largo }}</td>
+                    <td>{{ inventario.und }}</td>
+                    <td>{{ inventario.cantidad_necesaria }}</td>
+                    <td>{{ inventario.existencia_stock }}</td>
+                    <td>{{ inventario.salida }}</td>
+                    {% if inventario.existencia_fisica <= 2 %}
+                        <td class="bg-danger">{{ inventario.existencia_fisica }}</td>
+                    {% else %}    
+                        <td class="">{{ inventario.existencia_fisica }}</td>
+                    {% endif %}
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{% url "mod_inventario" id=inventario.id %}"><i class="bi bi-pencil-square"></i></a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger btn-sm" href="{% url "eliminar_inventario" id=inventario.id %}"><i class="bi bi-trash"></i></a>
+                    </td>
+                    {% else %}
+                </tr>
+                <tr>
+                    <td>{{ inventario.tipo }}</td>
+                    <td>{{ inventario.rosca }}</td>
+                    <td>{{ inventario.largo }}</td>
+                    <td>{{ inventario.und }}</td>
+                    <td>{{ inventario.cantidad_necesaria }}</td>
+                    <td>{{ inventario.existencia_stock }}</td>
+                    <td>{{ inventario.salida }}</td>
+                    <td>{{ inventario.existencia_fisica }}</td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{% url "mod_inventario" id=inventario.id %}"><i class="bi bi-pencil-square"></i></a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger btn-sm" href="{% url "eliminar_inventario" id=inventario.id %}"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Alertas de Herramienta {% endblock %}
+
+
+{% block 'content' %}
+
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "herramienta" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+    
+    <h5 class="text-center">Cantidad total de alertas "{{ total_alertas }}"</h5>
+    <div class="row mt-3 d-flex justify-content-center align-item-center ps-5 pe-5">
+        {% for alerta in alertas %}
+        <div class="col-12 col-md-4 p-0 card text-bg-danger carta-home m-3">
+            <a class="text-decoration-none text-light" href="{% url "detalles_herramienta" id=alerta.herramienta.id %}">
+                <img src="{{ alerta.herramienta.image.url }}" class="card-img-top" alt="..." style="max-height: 200px;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ alerta.herramienta.nombre }}</h5>
+                    <p class="card-text m-0"><b>Ultimo mantenimiento:</b> {{ alerta.herramienta.fecha_ultimo_mantenimiento }}</p>
+                    <p class="card-text m-0 fs-5"><b>Dias restantes para el mantenimineto:</b> {{ alerta.dias_restantes }}</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

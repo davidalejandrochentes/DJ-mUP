@@ -1,0 +1,90 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Detalles de la Máquina {% endblock %}
+
+
+{% block 'content' %}
+
+<div class="container">
+
+    <div class="d-flex p-3 justify-content-between">
+        <a class="text-decoration-none text-dark flecha-atras" href="{% url "repuesto_maquina" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a> 
+        <div class="pt-2 me-3 me-md-0">
+            <button type="button" class="btn bg-body-tertiary shadow rounded-pill" onclick="location.href='{% url 'descargar_excel_general' %}'">
+                Descargar <i class="bi bi-box-arrow-down"></i>
+            </button>  
+        </div>
+    </div>
+
+    <div class="mt-2 ps-5 pe-5">
+        
+        <div class="table-responsive">
+        <table class="table table-striped shadow">
+            <thead>
+                <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                    <th>Maquina</th>
+                    <th>Parte de la máquina</th>
+                    <th>Imagen</th>
+                    <th>Tipo</th>
+                    <th>Rosca</th>
+                    <th>Largo</th>
+                    <th>Und</th>
+                    <th>Cantidad necesaria</th>
+                    <th>Existencia en stock</th>
+                    <th>Salida</th>
+                    <th>Existencia física</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% regroup inventarios by parte.maquina.nombre as maquina_list %}
+                {% for maquina in maquina_list %}
+                    <tr>
+                        <td rowspan="{{ maquina.list|length }}">{{ maquina.grouper }}</td>
+                        {% for inventario in maquina.list %}  
+                            <td>{{ inventario.parte.nombre }}</td>
+
+                            <td>
+                                <button type="button" class="btn btn-secondary btn-sm imagen" data-bs-toggle="modal" data-bs-target="#exampleModal{{ inventario.parte.id }}">
+                                    <i class="bi bi-image"></i>
+                                </button>
+                                <div class="modal fade" id="exampleModal{{ inventario.parte.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Imagen</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <img src="{{ inventario.parte.image.url }}" class="img-fluid" alt="Imagen">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>{{ inventario.tipo }}</td>
+                            <td>{{ inventario.rosca }}</td>
+                            <td>{{ inventario.largo }}</td>
+                            <td>{{ inventario.und }}</td>
+                            <td>{{ inventario.cantidad_necesaria }}</td>
+                            <td>{{ inventario.existencia_stock }}</td>
+                            <td>{{ inventario.salida }}</td>
+                            {% if inventario.existencia_fisica <= 2 %}
+                                <td class="bg-danger">{{ inventario.existencia_fisica }}</td>
+                            {% else %}    
+                                <td class="">{{ inventario.existencia_fisica }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.mUP_extra_app',
-    'app.mUP_area'
+    'app.mUP_area',
+    'app.mUP_repuesto',
+    'app.mUP_herramienta',
+    'app.mUP_maquina',
+    'app.mUP_pc',
+    'app.mUP_vehiculo',
 ]
 
 MIDDLEWARE = [

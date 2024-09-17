@@ -335,7 +335,7 @@ def mod_mantenimiento_area_correctivo(request, id):
                     'area': area,
                 }
                 messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'SGE_area/mod_mantenimineto_correctivo.html', context)    
+                return render(request, 'mUP_area/mod_mantenimineto_correctivo.html', context)    
     
     return HttpResponse("Method Not Allowed", status=405)            
 

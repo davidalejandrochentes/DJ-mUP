@@ -1,0 +1,62 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Alertas {% endblock %}
+
+
+{% block 'content' %}
+
+<div class="container">
+
+    <div class="d-flex p-3 justify-content-between">
+        <a class="text-decoration-none text-dark flecha-atras" href="{% url "repuesto_maquina" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a> 
+    </div>
+
+    <div class="mt-2 ps-5 pe-5">
+        <div class="table-responsive">
+        <table class="table table-striped shadow">
+            <thead>
+                <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                    <th>Maquina</th>
+                    <th>Parte de la máquina</th>
+                    <th>Tipo</th>
+                    <th>Rosca</th>
+                    <th>Largo</th>
+                    <th>Und</th>
+                    <th>Cantidad necesaria</th>
+                    <th>Existencia en stock</th>
+                    <th>Salida</th>
+                    <th>Existencia física</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% regroup inventarios by parte.maquina.nombre as maquina_list %}
+                {% for maquina in maquina_list %}
+                    <tr>
+                        <td rowspan="{{ maquina.list|length }}">{{ maquina.grouper }}</td>
+                        {% for inventario in maquina.list %}  
+                            <td>{{ inventario.parte.nombre }}</td>
+                            <td>{{ inventario.tipo }}</td>
+                            <td>{{ inventario.rosca }}</td>
+                            <td>{{ inventario.largo }}</td>
+                            <td>{{ inventario.und }}</td>
+                            <td>{{ inventario.cantidad_necesaria }}</td>
+                            <td>{{ inventario.existencia_stock }}</td>
+                            <td>{{ inventario.salida }}</td>
+                            {% if inventario.existencia_fisica <= 2 %}
+                                <td class="bg-danger">{{ inventario.existencia_fisica }}</td>
+                            {% else %}    
+                                <td class="">{{ inventario.existencia_fisica }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
