@@ -10,12 +10,12 @@ urlpatterns = [
     path('delete/<int:id>', views.eliminar, name="eliminar_area"),
 
     path('mantenimientos_area_preventivo/<int:id>', views.mantenimientos_area_preventivo, name="mantenimientos_area_preventivo"),
-    path('mod_mantenimineto_area_preventivo/<int:id>', views.mod_mantenimineto_area_preventivo, name="mod_mantenimineto_area_preventivo"),
-    path('nuevo_mantenimineto_area_preventivo/<int:id>', views.nuevo_mantenimineto_area_preventivo, name="nuevo_mantenimineto_area_preventivo"),
+    path('mod_mantenimiento_area_preventivo/<int:id>', views.mod_mantenimiento_area_preventivo, name="mod_mantenimiento_area_preventivo"),
+    path('nuevo_mantenimiento_area_preventivo/<int:id>', views.nuevo_mantenimiento_area_preventivo, name="nuevo_mantenimiento_area_preventivo"),
     
     path('mantenimientos_area_correctivo/<int:id>', views.mantenimientos_area_correctivo, name="mantenimientos_area_correctivo"),
-    path('mod_mantenimineto_area_correctivo/<int:id>', views.mod_mantenimineto_area_correctivo, name="mod_mantenimineto_area_correctivo"),
-    path('nuevo_mantenimineto_area_correctivo/<int:id>', views.nuevo_mantenimineto_area_correctivo, name="nuevo_mantenimineto_area_correctivo"),
+    path('mod_mantenimiento_area_correctivo/<int:id>', views.mod_mantenimiento_area_correctivo, name="mod_mantenimiento_area_correctivo"),
+    path('nuevo_mantenimiento_area_correctivo/<int:id>', views.nuevo_mantenimiento_area_correctivo, name="nuevo_mantenimiento_area_correctivo"),
     
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_area"),
     

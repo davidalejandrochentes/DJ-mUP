@@ -10,6 +10,40 @@
         <a class="text-decoration-none text-dark" href="{% url "area" %}">
             <i class="bi bi-arrow-left fs-1"></i>
         </a>
+        <span class="p-3">
+            <button type="button" class="btn imagen shadow rounded-pill custom" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Modificar días para la alerta <i class="bi bi-pencil-square"></i>
+            </button>
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Atención</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Este valor será utilizado para definir con cuántos días de diferencia desea que le aparezca la alerta.</p>
+                            <form class="p-5 rounded-3 bg-body-tertiary shadow-lg" action="" method='POST' enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% if messages %}
+                                    <ul class="messages">
+                                        {% for message in messages %}
+                                            <div {% if message.tags %} class="alert alert-danger alerta" role="alert"{% endif %}>{{ message }}</div>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                <table>
+                                    {{ alert_form.as_table }}
+                                </table>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-secondary">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </span>
     </div>
 
     <div class="container cabecera shadow bg-danger bg-opacity-50 p-4 bw-5">

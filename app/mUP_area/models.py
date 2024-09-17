@@ -42,6 +42,15 @@ class TipoMantenimientoArea(models.Model):
 
 
 
+class DiasParaAlerta(models.Model):
+    días = models.IntegerField(blank=False, null=False, default=7)
+
+    def __str__(self):
+        txt = "Días para la alerta: {}"
+        return txt.format(self.días)    
+
+
+
 class MantenimientoArea(models.Model):
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
     tipo = models.ForeignKey(TipoMantenimientoArea, on_delete=models.CASCADE)
@@ -66,20 +75,20 @@ class MantenimientoArea(models.Model):
 def actualizar_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
     if instance.tipo.id == 1:  # Verificar si el tipo de mantenimiento tiene id=1
         area = instance.area
-        if instance.fecha > area.fecha_ultimo_mantenimiento:
-            area.fecha_ultimo_mantenimiento = instance.fecha
+        if instance.fecha_fin > area.fecha_ultimo_mantenimiento:
+            area.fecha_ultimo_mantenimiento = instance.fecha_fin
             area.save()   
 
 @receiver(pre_delete, sender=MantenimientoArea)
 def revertir_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
     if instance.tipo.id == 1:  # Verificar si el tipo de mantenimiento tiene id=1
         area = instance.area
-        mantenimientos_restantes = MantenimientoArea.objects.filter(area=area).exclude(id=instance.id).order_by('-fecha')
+        mantenimientos_restantes = MantenimientoArea.objects.filter(area=area).exclude(id=instance.id).order_by('-fecha_fin')
         if mantenimientos_restantes.exists():
             ultimo_mantenimiento = mantenimientos_restantes.first()
-            area.fecha_ultimo_mantenimiento = ultimo_mantenimiento.fecha
+            area.fecha_ultimo_mantenimiento = ultimo_mantenimiento.fecha_fin
         else:
-            area.fecha_ultimo_mantenimiento = None  # Otra opción si no hay mantenimientos restantes
+            area.fecha_ultimo_mantenimiento = date.today()  # Otra opción si no hay mantenimientos restantes
         area.save()
 
 

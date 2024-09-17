@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <a class="btn custom mantenimineto shadow rounded-pill" href="{% url "nuevo_mantenimineto_area_correctivo" id=area.id %}">Mantenimiento <i class="bi bi-tools"></i></a>
+            <a class="btn custom mantenimineto shadow rounded-pill" href="{% url "nuevo_mantenimiento_area_correctivo" id=area.id %}">Mantenimiento <i class="bi bi-tools"></i></a>
         </span>
     </div>
 
@@ -88,8 +88,8 @@
                 <tr>
                     <td>{{ mantenimiento.fecha_inicio }}</td>
                     <td>{{ mantenimiento.hora_inicio }}</td>
-                    <td>{{ mantenimiento.fecha }}</td>
-                    <td>{{ mantenimiento.hora }}</td>
+                    <td>{{ mantenimiento.fecha_fin }}</td>
+                    <td>{{ mantenimiento.hora_fin }}</td>
                     <td>{{ mantenimiento.operador }}</td>
                     <td>{{ mantenimiento.descripción }}</td>
                     <td>
@@ -104,7 +104,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="{{ mantenimiento.image_antes.url }}" class="img-fluid" alt="Imagen">
+                                        <img src="{{ mantenimiento.imagen_antes.url }}" class="img-fluid" alt="Imagen">
                                     </div>
                                 </div>
                             </div>
@@ -122,14 +122,14 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="{{ mantenimiento.image.url }}" class="img-fluid" alt="Imagen">
+                                        <img src="{{ mantenimiento.imagen_después.url }}" class="img-fluid" alt="Imagen">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="{% url "mod_mantenimineto_area_correctivo" id=mantenimiento.id %}"><i class="bi bi-pencil-square"></i></a>
+                        <a class="btn btn-info btn-sm" href="{% url "mod_mantenimiento_area_correctivo" id=mantenimiento.id %}"><i class="bi bi-pencil-square"></i></a>
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal-eliminar{{ mantenimiento.id }}">

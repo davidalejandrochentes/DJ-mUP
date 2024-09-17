@@ -1,5 +1,5 @@
 from django import forms
-from .models import Area, MantenimientoArea
+from .models import Area, MantenimientoArea, DiasParaAlerta
 from django.forms import Textarea, FileInput
 from datetime import date
 
@@ -24,6 +24,15 @@ class AreaForm(forms.ModelForm):
             'intervalo_mantenimiento': forms.NumberInput(attrs={'class': 'form-control m-2', 'type': 'number', 'placeholder': 'Número determinado de Días'}),
             'imagen': FileInput(attrs={'class': 'form-control-file m-2'}),
         }
+
+class DiasParaAlertaForm(forms.ModelForm):
+    class Meta:
+        model = DiasParaAlerta
+        fields = '__all__'
+        widgets = {
+            'días': forms.NumberInput(attrs={'class': 'form-control m-2', 'type': 'number', 'placeholder': 'Actualmente'}),
+        }
+
 
 class MantenimientoAreaForm(forms.ModelForm):
     class Meta:

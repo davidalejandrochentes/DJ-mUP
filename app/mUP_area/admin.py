@@ -1,9 +1,10 @@
 from django.contrib import admin
-from .models import Area, TipoMantenimientoArea, MantenimientoArea
+from .models import Area, TipoMantenimientoArea, MantenimientoArea, DiasParaAlerta
 
 
 admin.site.register(TipoMantenimientoArea)
 admin.site.register(MantenimientoArea)
+admin.site.register(DiasParaAlerta)
 
 class AreaAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):

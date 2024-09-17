@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Area, MantenimientoArea, TipoMantenimientoArea
-from .forms import AreaForm, MantenimientoAreaForm
+from .models import Area, MantenimientoArea, TipoMantenimientoArea, DiasParaAlerta
+from .forms import AreaForm, MantenimientoAreaForm, DiasParaAlertaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -15,13 +15,14 @@ from openpyxl.styles import Font, PatternFill
 
 @login_required
 def area(request):
+    dias_alerta = DiasParaAlerta.objects.first().días
     alert = Area.objects.all()
     areas = Area.objects.filter(nombre__icontains=request.GET.get('search', ''))
     total_areas = len(areas)
     alertas = []
     for area in alert:
         dias_restantes = area.dias_restantes_mantenimiento()
-        if dias_restantes <= 7:
+        if dias_restantes <= dias_alerta:
             
             alertas.append({
                 'area': area,
@@ -42,12 +43,24 @@ def area(request):
 
 @login_required
 def alertas(request):
+    dias_alert = get_object_or_404(DiasParaAlerta, id=1)  # Obtener la instancia que se va a modificar
+    if request.method == 'POST':
+        alert_form = DiasParaAlertaForm(request.POST, instance=dias_alert)  # Procesar el formulario con los datos enviados
+        if alert_form.is_valid():
+            días = alert_form.cleaned_data.get('días')
+            if días < 1:
+                return redirect('area_alertas')
+            else:
+                alert_form.save()  # Guardar los cambios en la instancia
+                return redirect('area_alertas')  # Redirigir para evitar reenvío del formulario
+    else:
+        alert_form = DiasParaAlertaForm(instance=dias_alert)  # Mostrar el formulario con la instancia actual
+    dias_alerta = dias_alert.días  # Obtener el valor actual de los días para la alerta
     alert = Area.objects.filter(nombre__icontains=request.GET.get('search', ''))
     alertas = []
     for area in alert:
         dias_restantes = area.dias_restantes_mantenimiento()
-        if dias_restantes <= 7:
-            
+        if dias_restantes <= dias_alerta:
             alertas.append({
                 'area': area,
                 'dias_restantes': dias_restantes
@@ -57,8 +70,11 @@ def alertas(request):
     context = {
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
+        'alert_form': alert_form,
     }
     return render(request, 'mUP_area/alertas.html', context)
+
+
 
 
 
@@ -200,7 +216,7 @@ def mantenimientos_area_preventivo(request, id):
 
 
 @login_required
-def mod_mantenimineto_area_preventivo(request, id):
+def mod_mantenimiento_area_preventivo(request, id):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoArea, id=id)
         area =mantenimiento.area
@@ -237,7 +253,7 @@ def mod_mantenimineto_area_preventivo(request, id):
 
 
 @login_required
-def nuevo_mantenimineto_area_preventivo(request, id):
+def nuevo_mantenimiento_area_preventivo(request, id):
     if request.method == 'GET':
         area = get_object_or_404(Area, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=2) 
@@ -290,7 +306,7 @@ def mantenimientos_area_correctivo(request, id):
 
 
 @login_required
-def mod_mantenimineto_area_correctivo(request, id):
+def mod_mantenimiento_area_correctivo(request, id):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoArea, id=id)
         area =mantenimiento.area
@@ -327,7 +343,7 @@ def mod_mantenimineto_area_correctivo(request, id):
 
 
 @login_required
-def nuevo_mantenimineto_area_correctivo(request, id):
+def nuevo_mantenimiento_area_correctivo(request, id):
     if request.method == 'GET':
         area = get_object_or_404(Area, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=1) 
