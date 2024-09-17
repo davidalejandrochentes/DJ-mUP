@@ -32,7 +32,7 @@ def herramienta(request):
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
     }
-    return render(request, 'SGE_herramienta/herramienta.html', context)    
+    return render(request, 'mUP_herramienta/herramienta.html', context)    
 
 @login_required
 def alertas(request):
@@ -52,7 +52,7 @@ def alertas(request):
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
     }
-    return render(request, 'SGE_herramienta/alertas.html', context)    
+    return render(request, 'mUP_herramienta/alertas.html', context)    
 
 @login_required
 def tabla_mantenimientos(request):
@@ -64,7 +64,7 @@ def tabla_mantenimientos(request):
         'herramientas': herramientas,
         'tipos_mantenimiento': tipos_mantenimiento,
     }
-    return render(request, 'SGE_herramienta/tablas.html', context)    
+    return render(request, 'mUP_herramienta/tablas.html', context)    
 
 ''' 
 @login_required
@@ -74,7 +74,7 @@ def crear_herramienta(request):
         context = {
             'form': form
         }
-        return render(request, 'SGE_herramienta/nueva.html', context)
+        return render(request, 'mUP_herramienta/nueva.html', context)
     if request.method == 'POST':
         form = HerramientaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
         if form.is_valid():
@@ -84,7 +84,7 @@ def crear_herramienta(request):
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_herramienta/nueva.html', context)
+                return render(request, 'mUP_herramienta/nueva.html', context)
             else:
                 # Manejo del archivo de imagen
                 if 'image' in request.FILES:
@@ -97,7 +97,7 @@ def crear_herramienta(request):
                 'form': form
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'SGE_herramienta/nueva.html', context)  
+            return render(request, 'mUP_herramienta/nueva.html', context)  
 '''  
 @login_required
 def crear_herramienta(request):
@@ -106,7 +106,7 @@ def crear_herramienta(request):
         context = {
             'form': form
         }
-        return render(request, 'SGE_herramienta/nueva.html', context)
+        return render(request, 'mUP_herramienta/nueva.html', context)
     if request.method == 'POST':
         form = HerramientaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
         if form.is_valid():
@@ -117,7 +117,7 @@ def crear_herramienta(request):
                 'form': form
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'SGE_herramienta/nueva.html', context)             
+            return render(request, 'mUP_herramienta/nueva.html', context)             
 
 @login_required
 def eliminar(request, id):
@@ -148,7 +148,7 @@ def detalles(request, id):
             'mantenimientos': mantenimientos,
             'tipos_mantenimiento': tipos_mantenimiento,
             }
-        return render(request, 'SGE_herramienta/detalles.html', context)
+        return render(request, 'mUP_herramienta/detalles.html', context)
     
     if request.method == 'POST':
         herramienta = get_object_or_404(Herramienta, id = id)
@@ -186,7 +186,7 @@ def detalles(request, id):
                     'mantenimientos': mantenimientos,
                     'tipos_mantenimiento': tipos_mantenimiento,
                 }
-                return render(request, 'SGE_herramienta/detalles.html', context) 
+                return render(request, 'mUP_herramienta/detalles.html', context) 
         
         if form_mant.is_valid():
             mantenimiento = form_mant.save(commit=False)
@@ -203,7 +203,7 @@ def detalles(request, id):
             'mantenimientos': mantenimientos,
             'tipos_mantenimiento': tipos_mantenimiento,
             }
-            return render(request, 'SGE_herramienta/detalles.html', context)  
+            return render(request, 'mUP_herramienta/detalles.html', context)  
         else:
             previous_url = request.META.get('HTTP_REFERER')
             return HttpResponseRedirect(previous_url)            

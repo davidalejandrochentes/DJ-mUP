@@ -32,7 +32,9 @@
                         <div class="modal-body">
                             <form method="post" enctype="multipart/form-data">
                                 {% csrf_token %}
-                                {{ part_form }}
+                                <table>
+                                    {{ part_form.as_table }}
+                                </table>    
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-secondary">Guardar</button>
                                 </div>
@@ -55,14 +57,17 @@
                         <div class="modal-body">
                             <form method="post" action="">
                                 {% csrf_token %}
-                                <label for="parte-select-inventario" class="form-label">Selecciona la parte para agregar inventario:</label>
-                                <select name="parte" class="form-select mb-2" id="parte-select-inventario" required>
+                                <table>
+                                    <label for="parte-select-inventario" class="form-label">Selecciona la parte para agregar inventario:</label>
+                                    <select name="parte" class="form-select mb-2" id="parte-select-inventario" required>
                                     <option value="" selected disabled>Selecciona una parte</option>
                                     {% for parte in partes_maquina %}
                                         <option value="{{ parte.id }}">{{ parte.nombre }}</option>
                                     {% endfor %}
                                 </select>
-                                {{ inve_form }} <!-- Renderizar el formulario de inventario -->
+                                {{ inve_form.as_table }}
+                                </table>
+                                
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-secondary">Guardar Inventario</button>
                                 </div>

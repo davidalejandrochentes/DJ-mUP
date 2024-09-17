@@ -130,7 +130,7 @@
                             <form class="p-5 rounded-3 bg-body-tertiary sombra-login" action="{% url "detalles_herramienta" id=herramienta.id %}" method='POST' enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <table>
-                                    {{ form }}
+                                    {{ form.as_table }}
                                 </table>
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-secondary">Guardar</button>
