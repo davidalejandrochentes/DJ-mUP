@@ -77,18 +77,18 @@ class MantenimientoPC(models.Model):
 def actualizar_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
     if instance.tipo.id == 1:
         pc = instance.pc
-        if instance.fecha > pc.fecha_ultimo_mantenimiento:
-            pc.fecha_ultimo_mantenimiento = instance.fecha
+        if instance.fecha_fin > pc.fecha_ultimo_mantenimiento:
+            pc.fecha_ultimo_mantenimiento = instance.fecha_fin
             pc.save()   
 
 @receiver(pre_delete, sender=MantenimientoPC)
 def revertir_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
     if instance.tipo.id == 1:
         pc = instance.pc
-        mantenimientos_restantes = MantenimientoPC.objects.filter(pc=pc).exclude(id=instance.id).order_by('-fecha')
+        mantenimientos_restantes = MantenimientoPC.objects.filter(pc=pc).exclude(id=instance.id).order_by('-fecha_fin')
         if mantenimientos_restantes.exists():
             ultimo_mantenimiento = mantenimientos_restantes.first()
-            pc.fecha_ultimo_mantenimiento = ultimo_mantenimiento.fecha
+            pc.fecha_ultimo_mantenimiento = ultimo_mantenimiento.fecha_fin
         else:
             pc.fecha_ultimo_mantenimiento = date.today()  # Otra opción si no hay mantenimientos restantes
         pc.save()

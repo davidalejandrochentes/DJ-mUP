@@ -88,8 +88,8 @@
                 <tr>
                     <td>{{ mantenimiento.fecha_inicio }}</td>
                     <td>{{ mantenimiento.hora_inicio }}</td>
-                    <td>{{ mantenimiento.fecha }}</td>
-                    <td>{{ mantenimiento.hora }}</td>
+                    <td>{{ mantenimiento.fecha_fin }}</td>
+                    <td>{{ mantenimiento.hora_fin }}</td>
                     <td>{{ mantenimiento.operador }}</td>
                     <td>{{ mantenimiento.partes_y_piezas }}</td>
                     <td>{{ mantenimiento.descripción }}</td>
@@ -105,7 +105,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <img src="{{ mantenimiento.image.url }}" class="img-fluid" alt="Imagen">
+                                        <img src="{{ mantenimiento.imagem.url }}" class="img-fluid" alt="Imagen">
                                     </div>
                                 </div>
                             </div>
