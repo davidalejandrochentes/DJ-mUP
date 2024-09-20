@@ -25,6 +25,7 @@ urlpatterns = [
     path('area/', include('app.mUP_area.urls')),
     path('repuesto/', include('app.mUP_repuesto.urls')),
     path('herramienta/', include('app.mUP_herramienta.urls')),
+    path('pc/', include('app.mUP_pc.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

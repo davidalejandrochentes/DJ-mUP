@@ -66,39 +66,7 @@ def tabla_mantenimientos(request):
     }
     return render(request, 'mUP_herramienta/tablas.html', context)    
 
-''' 
-@login_required
-def crear_herramienta(request):
-    if request.method == 'GET':
-        form = HerramientaForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_herramienta/nueva.html', context)
-    if request.method == 'POST':
-        form = HerramientaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
-        if form.is_valid():
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            if intervalo_mantenimiento < 0:
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_herramienta/nueva.html', context)
-            else:
-                # Manejo del archivo de imagen
-                if 'image' in request.FILES:
-                    form.instance.image = request.FILES['image']
 
-                form.save()
-                return redirect('herramienta')
-        else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_herramienta/nueva.html', context)  
-'''  
 @login_required
 def crear_herramienta(request):
     if request.method == 'GET':

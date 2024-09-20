@@ -1,0 +1,166 @@
+{% extends "layout/base.html" %}
+
+{% load static %}
+
+{% block 'title'%} Detalles equipo de cómputo {% endblock %}
+
+
+{% block 'content' %}
+<div class="container mb-5">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark flecha-atras" href="{% url "pc" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+        <span class="p-3">
+
+        <button type="button" class="btn custom imagen shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Ver Imagen <i class="bi bi-image"></i>
+        </button>
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Imagen</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <img src="{{ pc.imagen.url }}" class="img-fluid" alt="Imagen">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            
+            <button type="button" class="btn custom editar shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-editar">
+                Editar <i class="bi bi-pencil-square"></i>
+            </button>
+            <div class="modal fade modal-lg" id="modal-editar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Editar <b>{{ pc.nombre }}</b></h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form class="p-5 rounded-3 bg-body-tertiary sombra-login" action="{% url "detalles_pc" id=pc.id %}" method='POST' enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <table>
+                                    {{ form }}
+                                </table>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-secondary">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                        
+            <button type="button" class="btn custom eliminar mt-md-0 mt-2 shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-eliminar">
+                Eliminar <i class="bi bi-trash"></i>
+            </button>
+            <div class="modal fade" id="modal-eliminar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Atención</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Esta seguro de <b>eliminar</b> el equipo <b>"{{ pc.nombre }}"</b>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <form method="post" action="{% url "eliminar_pc" id=pc.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="pc_id" value="{{ pc.id }}">
+                                <button class="btn btn-danger" type="submit">Estoy seguro</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </span>
+    </div>
+                        
+    <h3 class="mt-1 text-uppercase">Datos de ({{ pc.nombre }})</h3>
+    <div class="table-responsive">
+    <table class="table table-striped shadow">
+        <thead>
+            <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                <th scope="col">Nombre</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Número de inventario</th>
+                <th scope="col">Encargado</th>
+                <th scope="col">Teléfono encargado</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Ubicación</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ pc.nombre }}</td>
+                <td>{{ pc.modelo }}</td>
+                <td>{{ pc.número_de_inventario }}</td>
+                <td>{{ pc.encargado }}</td>
+                <td>{{ pc.teléfono_encargado }}</td>
+                <td>{{ pc.descripción }}</td>
+                <td>{{ pc.ubicación }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="table-responsive">
+    <table class="table table-striped shadow">
+        <thead>
+            <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                <th scope="col">Costo de adquisición</th>
+                <th scope="col">Fecha de adquisición</th>
+                <th scope="col">Fecha de retirada</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Garantía</th>
+                <th scope="col">Software instalado</th>
+                <th scope="col">Intervalo mantenimiento correctivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ pc.costo_de_adquisición }}</td>
+                <td>{{ pc.fecha_de_adquisición }}</td>
+                <td>{{ pc.fecha_de_retirada }}</td>
+                <td>{{ pc.estado }}</td>
+                <td>{{ pc.garantía }}</td>
+                <td>{{ pc.software_instalado }}</td>
+                <td>{{ pc.intervalo_mantenimiento }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+                        
+    <div class="row mt-3 d-flex justify-content-center align-item-center ps-5 pe-5">
+        <div class="col-12 col-md-4 p-0 shadow-lg custom card m-3">
+            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc_preventivos" id=pc.id %}">
+                <img src="{% static "images/Mantenimiento-preventivo-PC.jpg" %}" class="card-img-top" alt="..." style="max-height: 200px;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">Mantenimientos Preventivo</h5>
+                    <p class="card-text m-0">Acciones y tareas programadas y realizadas regularmente para de prevenir fallos y problemas</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-4 p-0 shadow-lg custom card m-3">
+            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc_correctivos" id=pc.id %}">
+                <img src="{% static "images/mantenimiento-correctivo-de-computadores-ID-01-1024x512.webp" %}" class="card-img-top" alt="..." style="max-height: 200px;">
+                <div class="card-body custom">
+                    <h5 class="card-title text-uppercase">Mantenimientos Correctivo</h5>
+                    <p class="card-text m-0">Su objetivo es reparar o restaurar el equipo o sistema a su estado operativo normal</p>
+                </div>
+            </a>
+        </div>
+    </div>
+                        
+    </div>
+{% endblock %}

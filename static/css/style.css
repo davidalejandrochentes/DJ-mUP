@@ -74,7 +74,7 @@ ul {
 .cabecera_repuesto{
     height: 200px;
     max-width: 1240px;
-    background-image: url("../images/repuesto.jpg");
+    background-image: url("../images/gear-metal-wheels-isolated-white-background.jpg");
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: scroll;
@@ -85,7 +85,18 @@ ul {
 .cabecera_herramienta{
     height: 200px;
     max-width: 1240px;
-    background-image: url("../images/herramientas.jpg");
+    background-image: url("../images/top-view-mechanical-tools-arrangement.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: cover;
+    background-blend-mode: multiply;
+}
+
+.cabecera_pc{
+    height: 200px;
+    max-width: 1240px;
+    background-image: url("../images/modern-monitor-elegant-table.jpg");
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: scroll;
