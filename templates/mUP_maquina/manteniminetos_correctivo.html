@@ -1,0 +1,173 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Mantenimientos Preventivo {% endblock %}
+
+
+{% block 'content' %}
+<div class="container mb-5">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark flecha-atras" href="{% url "detalles_maquina" id=maquina.id %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+        <span class="p-3">
+            
+            <button type="button" class="btn custom descargar shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#modal-descargar">
+                Descargar <i class="bi bi-box-arrow-down "></i>
+            </button>
+            <div class="modal fade" id="modal-descargar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Descargar </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="" action="{% url 'documento_mantenimientos_correctivos_maquina' id=maquina.id %}" method="get">
+                            <label class="" for="mes">Mes:</label>
+                            <select class="form-select form-select-sm" name="mes" id="mes">
+                                <option value="">Todos los meses</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                            <label class="" for="anio">Año:</label>
+                            <select class="form-select form-select-sm" name="anio" id="anio">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                            
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="submit" value="Submit" class="btn btn-secondary">Descargar <i class="bi bi-box-arrow-down"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <a class="btn custom mantenimineto shadow rounded-pill" href="{% url "nuevo_mantenimineto_maquina_correctivo" id=maquina.id %}">Mantenimiento <i class="bi bi-tools"></i></a>
+        </span>
+    </div>
+
+    <h3 class="text-uppercase">Mantenimientos {{ tipo_mantenimiento }} de {{ maquina }}</h3>
+    <div class="table-responsive">
+    <table class="table table-striped shadow">
+        <thead>
+            <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+                <th>Fecha inicio</th>
+                <th>Hora inicio</th>
+                <th>Fecha final</th>
+                <th>Hora final</th>
+                <th>Operador</th>
+                <th>Hr máquina</th>
+                <th>Partes y piezas</th>
+                <th>Descripción</th>
+                <th>Imagenes</th>
+                <th>Modificar</th>
+                <th>Eliminar<th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mantenimiento in mantenimientos %}
+                <tr>
+                    <td>{{ mantenimiento.fecha_inicio }}</td>
+                    <td>{{ mantenimiento.hora_inicio }}</td>
+                    <td>{{ mantenimiento.fecha }}</td>
+                    <td>{{ mantenimiento.hora }}</td>
+                    <td>{{ mantenimiento.operador }}</td>
+                    <td>{{ mantenimiento.hr_maquina }}</td>
+                    <td>{{ mantenimiento.partes_y_piezas }}</td>
+                    <td>{{ mantenimiento.descripción }}</td>
+                    <td>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal{{ mantenimiento.id }}">
+                            <i class="bi bi-image"></i>
+                        </button>
+                        <div class="modal fade" id="exampleModal{{ mantenimiento.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Imagenes</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="carouselExampleIndicators{{ mantenimiento.id }}" class="carousel slide">
+                                            <div class="carousel-indicators">
+                                                <button type="button" data-bs-target="#carouselExampleIndicators{{ mantenimiento.id }}" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                                <button type="button" data-bs-target="#carouselExampleIndicators{{ mantenimiento.id }}" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                                <button type="button" data-bs-target="#carouselExampleIndicators{{ mantenimiento.id }}" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                            </div>
+                                            <div class="carousel-inner">
+                                                <div class="carousel-item active">
+                                                    <img src="{{ mantenimiento.image.url }}" class="d-block w-100" alt="...">
+                                                </div>
+                                                <div class="carousel-item">
+                                                    <img src="{{ mantenimiento.image2.url }}" class="d-block w-100" alt="...">
+                                                </div>
+                                                <div class="carousel-item">
+                                                    <img src="{{ mantenimiento.image3.url }}" class="d-block w-100" alt="...">
+                                                </div>
+                                            </div>
+                                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators{{ mantenimiento.id }}" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Previous</span>
+                                            </button>
+                                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators{{ mantenimiento.id }}" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Next</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{% url "mod_mantenimineto_maquina_correctivo" id=mantenimiento.id %}"><i class="bi bi-pencil-square"></i></a>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal-eliminar{{ mantenimiento.id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <div class="modal fade" id="modal-eliminar{{ mantenimiento.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Atención</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Esta seguro de <b>eliminar</b> este mantenimiento</b>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                    <a class="btn btn-danger" href="{% url "eliminar_mantenimiento_maquina" id=mantenimiento.id %}">Estoy seguro</a>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

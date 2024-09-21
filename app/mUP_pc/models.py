@@ -68,7 +68,7 @@ class MantenimientoPC(models.Model):
 
     def __str__(self):
         txt = "Equipo: {}, Tipo: {}, Fecha: {}"
-        return txt.format(self.pc, self.tipo, self.fecha)
+        return txt.format(self.pc, self.tipo, self.fecha_fin)
     
 
 

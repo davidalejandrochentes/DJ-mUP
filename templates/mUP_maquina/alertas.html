@@ -1,0 +1,37 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Alertas de Maquina {% endblock %}
+
+
+{% block 'content' %}
+
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "maquina" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+    </div>
+
+    <div class="container cabecera shadow bg-danger bg-opacity-50 p-4 bw-5">
+        <h1 class="text-center text-light text-uppercase display-1"><strong> alertas de máquinas</strong></h1>
+        <h5 class="text-center text-light text-uppercase">Cantidad total: {{ total_alertas }}</h5>
+    </div>
+
+    <div class="row mt-3 d-flex justify-content-center align-item-center ps-5 pe-5">
+        {% for alerta in alertas %}
+        <div class="col-12 col-md-4 p-0 card text-bg-danger carta-home m-3 shadow-lg">
+            <a class="text-decoration-none text-light" href="{% url "mantenimientos_maquina_correctivo" id=alerta.maquina.id %}">
+                <img src="{{ alerta.maquina.image.url }}" class="card-img-top" alt="..." style="max-height: 200px;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ alerta.maquina.nombre }}</h5>
+                    <p class="card-text m-0"><b>Ultimo mantenimiento:</b> {{ alerta.maquina.fecha_ultimo_mantenimiento }}</p>
+                    <p class="card-text m-0 fs-5"><b>Horas restantes el mantenimiento:</b> {{ alerta.horas_restantes }}</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}
