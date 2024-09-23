@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Maquina, MantenimientoMaquina, TipoMantenimientoMaquina, DiasParaAlerta
-from .forms import MaquinaForm, MantenimientoMaquinaCorrectivoForm, MantenimientoMaquinaPreventivoForm
+from .models import Maquina, MantenimientoMaquina, TipoMantenimientoMaquina, HorasParaAlerta
+from .forms import MaquinaForm, MantenimientoMaquinaCorrectivoForm, MantenimientoMaquinaPreventivoForm, HorasParaAlertaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -15,13 +15,14 @@ from openpyxl.styles import Font, PatternFill
 
 @login_required
 def maquina(request):
+    horas_alerta = HorasParaAlerta.objects.first().horas
     alert = Maquina.objects.all()
     maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
     total_maquinas = len(maquinas)
     alertas = []
     for maquina in alert:
         horas_restantes = maquina.horas_restantes_mantenimiento()
-        if horas_restantes <= 100:
+        if horas_restantes <= horas_alerta:
             
             alertas.append({
                 'maquina': maquina,
@@ -68,7 +69,7 @@ def tabla_mantenimientos(request):
     maquinas = Maquina.objects.all()
     tipos_mantenimiento = TipoMantenimientoMaquina.objects.all()
     for maquina in maquinas:
-        maquina.mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha', '-hora')
+        maquina.mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
     context = {
         'maquinas': maquinas,
         'tipos_mantenimiento': tipos_mantenimiento,
@@ -98,8 +99,8 @@ def crear_maquina(request):
                 return render(request, 'mUP_maquina/nueva.html', context)
             else:
                 # Manejo del archivo de imagen
-                if 'image' in request.FILES:
-                    form.instance.image = request.FILES['image']
+                if 'imagen' in request.FILES:
+                    form.instance.imagen = request.FILES['imagen']
                 form.save()
                 return redirect('maquina')
         else:
@@ -116,7 +117,7 @@ def crear_maquina(request):
 def detalles(request, id):
     if request.method == 'GET':
         maquina = get_object_or_404(Maquina, id=id)
-        mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha', '-hora')
+        mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
         form = MaquinaForm(instance=maquina)
         context = {
             'maquina': maquina,
@@ -134,7 +135,7 @@ def detalles(request, id):
         if form.is_valid():
             intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
             if intervalo_mantenimiento < 0:
-                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha', '-hora')
+                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'maquina': maquina,
@@ -146,7 +147,7 @@ def detalles(request, id):
                 return HttpResponseRedirect(previous_url)
             else:
                 form.save()
-                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha', '-hora')
+                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
                 context = {
                     'maquina': maquina,
                     'form': form,
@@ -188,7 +189,7 @@ def mantenimientos_maquina_preventivo(request, id):
     if request.method == 'GET':
         maquina = get_object_or_404(Maquina, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
-        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha', '-hora')
+        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
         context = {
             'maquina': maquina,
             'tipo_mantenimiento': tipo_mantenimiento,
@@ -222,8 +223,8 @@ def mod_mantenimineto_maquina_preventivo(request, id):
             mantenimiento.maquina = maquina
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.partes_y_piezas = ""
-            if 'image' in request.FILES:
-                mantenimiento.image = request.FILES['image'] 
+            if 'imagen' in request.FILES:
+                mantenimiento.imagen = request.FILES['imagen'] 
             mantenimiento.save()
             return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
         else:
@@ -262,8 +263,8 @@ def nuevo_mantenimineto_maquina_preventivo(request, id):
             mantenimiento.maquina = maquina
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.partes_y_piezas = ""
-            if 'image' in request.FILES:
-                mantenimiento.image = request.FILES['image'] 
+            if 'imagen' in request.FILES:
+                mantenimiento.imagen = request.FILES['imagen'] 
             mantenimiento.save()
             return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
         else:
@@ -285,7 +286,7 @@ def mantenimientos_maquina_correctivo(request, id):
     if request.method == 'GET':
         maquina = get_object_or_404(Maquina, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
-        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha', '-hora')
+        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
         context = {
             'maquina': maquina,
             'tipo_mantenimiento': tipo_mantenimiento,
@@ -318,8 +319,8 @@ def mod_mantenimineto_maquina_correctivo(request, id):
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.maquina = maquina
             mantenimiento.tipo = tipo_mantenimiento
-            if 'image' in request.FILES:
-                mantenimiento.image = request.FILES['image'] 
+            if 'imagen' in request.FILES:
+                mantenimiento.imagen = request.FILES['imagen'] 
             mantenimiento.save()
             return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
         else:
@@ -357,8 +358,8 @@ def nuevo_mantenimineto_maquina_correctivo(request, id):
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.maquina = maquina
             mantenimiento.tipo = tipo_mantenimiento
-            if 'image' in request.FILES:
-                mantenimiento.image = request.FILES['image'] 
+            if 'imagen' in request.FILES:
+                mantenimiento.imagen = request.FILES['imagen'] 
             mantenimiento.save()
             return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
         else:
@@ -387,16 +388,16 @@ def documento_general_mantenimientos_maquina(request):
     anio = request.GET.get('anio')
     tipo_mantenimiento_id = request.GET.get('tipo_mantenimiento')
 
-    mantenimientos = MantenimientoMaquina.objects.filter(fecha__year=anio)
+    mantenimientos = MantenimientoMaquina.objects.filter(fecha_fin__year=anio)
 
     if mes:
-        mantenimientos = mantenimientos.filter(fecha__month=mes)
+        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
 
     if tipo_mantenimiento_id:  # Si se seleccionó un tipo de mantenimiento
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, pk=tipo_mantenimiento_id)
         mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
 
-    mantenimientos = mantenimientos.order_by('-fecha', '-hora')
+    mantenimientos = mantenimientos.order_by('-fecha_fin', '-hora_fin')
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     if mes:
@@ -421,8 +422,8 @@ def documento_general_mantenimientos_maquina(request):
             mantenimiento.operador,
             mantenimiento.fecha_inicio,
             mantenimiento.hora_inicio,
-            mantenimiento.fecha,
-            mantenimiento.hora,
+            mantenimiento.fecha_fin,
+            mantenimiento.hora_fin,
             mantenimiento.hr_maquina,
             mantenimiento.partes_y_piezas,
             mantenimiento.descripción
@@ -453,12 +454,12 @@ def documento_mantenimientos_preventivos_maquina(request, id):
     tipo_mantenimiento_id = 2
 
     maquina = get_object_or_404(Maquina, pk=id)
-    mantenimientos = MantenimientoMaquina.objects.filter(maquina=maquina).order_by('-fecha', '-hora')
+    mantenimientos = MantenimientoMaquina.objects.filter(maquina=maquina).order_by('-fecha_fin', '-hora_fin')
 
     if mes:
-        mantenimientos = mantenimientos.filter(fecha__month=mes)
+        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
     if anio:
-        mantenimientos = mantenimientos.filter(fecha__year=anio)
+        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
     if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, pk=tipo_mantenimiento_id)
         mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
@@ -486,8 +487,8 @@ def documento_mantenimientos_preventivos_maquina(request, id):
             mantenimiento.operador,
             mantenimiento.fecha_inicio,
             mantenimiento.hora_inicio,
-            mantenimiento.fecha,
-            mantenimiento.hora,
+            mantenimiento.fecha_fin,
+            mantenimiento.hora_fin,
             mantenimiento.hr_maquina,
             mantenimiento.descripción
         ])
@@ -518,12 +519,12 @@ def documento_mantenimientos_correctivos_maquina(request, id):
     tipo_mantenimiento_id = 1
 
     maquina = get_object_or_404(Maquina, pk=id)
-    mantenimientos = MantenimientoMaquina.objects.filter(maquina=maquina).order_by('-fecha', '-hora')
+    mantenimientos = MantenimientoMaquina.objects.filter(maquina=maquina).order_by('-fecha_fin', '-hora_fin')
 
     if mes:
-        mantenimientos = mantenimientos.filter(fecha__month=mes)
+        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
     if anio:
-        mantenimientos = mantenimientos.filter(fecha__year=anio)
+        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
     if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, pk=tipo_mantenimiento_id)
         mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
@@ -551,8 +552,8 @@ def documento_mantenimientos_correctivos_maquina(request, id):
             mantenimiento.operador,
             mantenimiento.fecha_inicio,
             mantenimiento.hora_inicio,
-            mantenimiento.fecha,
-            mantenimiento.hora,
+            mantenimiento.fecha_fin,
+            mantenimiento.hora_fin,
             mantenimiento.hr_maquina,
             mantenimiento.partes_y_piezas,
             mantenimiento.descripción

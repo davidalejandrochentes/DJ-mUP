@@ -52,12 +52,12 @@ class TipoMantenimientoMaquina(models.Model):
 
 
 
-class DiasParaAlerta(models.Model):
-    días = models.IntegerField(blank=False, null=False, default=7)
+class HorasParaAlerta(models.Model):
+    horas = models.IntegerField(blank=False, null=False, default=30)
 
     def __str__(self):
-        txt = "Días para la alerta: {}"
-        return txt.format(self.días)  
+        txt = "horas para la alerta: {}"
+        return txt.format(self.horas)  
 
 
 

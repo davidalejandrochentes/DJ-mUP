@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Maquina, TipoMantenimientoMaquina, MantenimientoMaquina, DiasParaAlerta
+from .models import Maquina, TipoMantenimientoMaquina, MantenimientoMaquina, HorasParaAlerta
 
 
 admin.site.register(TipoMantenimientoMaquina)
 admin.site.register(MantenimientoMaquina)
-admin.site.register(DiasParaAlerta)
+admin.site.register(HorasParaAlerta)
 
 class MaquinaAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):

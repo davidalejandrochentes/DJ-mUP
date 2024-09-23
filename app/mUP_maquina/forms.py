@@ -1,5 +1,5 @@
 from django import forms
-from .models import Maquina, MantenimientoMaquina, DiasParaAlerta
+from .models import Maquina, MantenimientoMaquina, HorasParaAlerta
 from django.forms import Textarea, FileInput
 from datetime import date
 
@@ -98,10 +98,10 @@ class MantenimientoMaquinaPreventivoForm(forms.ModelForm):
         return cleaned_data 
 
 
-class DiasParaAlertaForm(forms.ModelForm):
+class HorasParaAlertaForm(forms.ModelForm):
     class Meta:
-        model = DiasParaAlerta
+        model = HorasParaAlerta
         fields = '__all__'
         widgets = {
-            'días': forms.NumberInput(attrs={'class': 'form-control m-2', 'type': 'number', 'placeholder': 'Actualmente'}),
+            'horas': forms.NumberInput(attrs={'class': 'form-control m-2', 'type': 'number', 'placeholder': 'Actualmente'}),
         }        
