@@ -21,7 +21,7 @@ class Maquina(models.Model):
     estado_de_garantía = models.CharField(max_length=100, null=False, blank=False)
     consumo_de_energía = models.CharField(max_length=100, null=False, blank=False)
     
-    horas_máquina_trabajada = models.IntegerField(blank=False, null=False, default=0)
+    horas_máquina_trabajada = models.IntegerField(blank=False, null=False)
     intervalo_mantenimiento = models.IntegerField(blank=False, null=False)
     fecha_ultimo_mantenimiento = models.DateField(default=date.today, blank=False, null=False)
     imagen = models.ImageField(upload_to="maquina/imagen", null=False, blank=False)

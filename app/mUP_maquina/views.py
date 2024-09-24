@@ -239,9 +239,19 @@ def mod_mantenimineto_maquina_preventivo(request, id):
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.partes_y_piezas = ""
             if 'imagen' in request.FILES:
-                mantenimiento.imagen = request.FILES['imagen'] 
-            mantenimiento.save()
-            return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
+                mantenimiento.imagen = request.FILES['imagen']
+            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+                context = {
+                    'form_mant': form_mant,
+                    'maquina': maquina,
+                    'tipo_mantenimiento': tipo_mantenimiento,
+                }
+                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
+                return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
+            else:
+                mantenimiento.save()
+                return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
         else:
             context = {
                 'form_mant': form_mant,
@@ -280,8 +290,18 @@ def nuevo_mantenimineto_maquina_preventivo(request, id):
             mantenimiento.partes_y_piezas = ""
             if 'imagen' in request.FILES:
                 mantenimiento.imagen = request.FILES['imagen'] 
-            mantenimiento.save()
-            return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
+            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+                context = {
+                    'form_mant': form_mant,
+                    'maquina': maquina,
+                    'tipo_mantenimiento': tipo_mantenimiento,
+                }
+                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
+                return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
+            else:
+                mantenimiento.save()
+                return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
         else:
             context = {
                 'form_mant': form_mant,
@@ -334,10 +354,21 @@ def mod_mantenimineto_maquina_correctivo(request, id):
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.maquina = maquina
             mantenimiento.tipo = tipo_mantenimiento
-            if 'imagen' in request.FILES:
-                mantenimiento.imagen = request.FILES['imagen'] 
-            mantenimiento.save()
-            return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
+
+            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+                context = {
+                    'form_mant': form_mant,
+                    'maquina': maquina,
+                    'tipo_mantenimiento': tipo_mantenimiento,
+                }
+                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
+                return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html', context)
+            else:
+                if 'imagen' in request.FILES:
+                    mantenimiento.imagen = request.FILES['imagen'] 
+                mantenimiento.save()
+                return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
         else:
             context = {
                 'form_mant': form_mant,

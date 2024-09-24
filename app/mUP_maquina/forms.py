@@ -54,12 +54,16 @@ class MantenimientoMaquinaCorrectivoForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
+        hr_maquina = cleaned_data.get('hr_maquina')
         
         if fecha_inicio > date.today():
             self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
         
         if fecha_fin > date.today():
             self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+
+        if hr_maquina < 1:
+            self.add_error('hr_maquina', 'El valor de "hr máquina" no puede ser un número negativo')    
         
         return cleaned_data    
 
@@ -88,12 +92,16 @@ class MantenimientoMaquinaPreventivoForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
+        hr_maquina = cleaned_data.get('hr_maquina')
         
         if fecha_inicio > date.today():
             self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
         
         if fecha_fin > date.today():
             self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+
+        if hr_maquina < 1:
+            self.add_error('hr_maquina', 'El valor de "hr máquina" no puede ser un número negativo')     
         
         return cleaned_data 
 
