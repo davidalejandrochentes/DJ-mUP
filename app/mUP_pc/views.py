@@ -113,7 +113,7 @@ def crear_pc(request):
             else:
                 # Manejo del archivo de imagen
                 if 'imagen' in request.FILES:
-                    form.instance.image = request.FILES['imagen']
+                    form.instance.imagen = request.FILES['imagen']
                 form.save()
                 return redirect('pc')
         else:

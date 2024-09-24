@@ -73,7 +73,7 @@ class MantenimientoMaquina(models.Model):
     hr_maquina = models.IntegerField(blank=False, null=False, default=0)
     partes_y_piezas = models.TextField(max_length=500, null=False, blank=False, default="")
     descripción = models.TextField(max_length=500, null=False, blank=False, default="")
-    imagen = models.ImageField(upload_to="maquina/mantenimiento/image", null=False, blank=False, default=None)
+    imagen = models.ImageField(upload_to="maquina/mantenimiento/imagen", null=False, blank=False, default=None)
 
 
     def __str__(self):
@@ -82,13 +82,15 @@ class MantenimientoMaquina(models.Model):
     
 
 
-
 @receiver(post_save, sender=MantenimientoMaquina)
 def actualizar_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
-    maquina = instance.maquina
-    if instance.fecha_fin > maquina.fecha_ultimo_mantenimiento:
-        maquina.fecha_ultimo_mantenimiento = instance.fecha_fin
-        maquina.save()   
+    if instance.tipo.id == 1:
+        maquina = instance.maquina
+        if instance.fecha_fin > maquina.fecha_ultimo_mantenimiento:
+            maquina.fecha_ultimo_mantenimiento = instance.fecha_fin
+            maquina.save()   
+
+
 
 @receiver(pre_delete, sender=MantenimientoMaquina)
 def revertir_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
@@ -150,5 +152,5 @@ def eliminar_imagen_anterior_al_actualizar_mantenimineto(sender, instance, **kwa
     except MantenimientoMaquina.DoesNotExist:
         return False
     if mantenimiento_anterior.imagen and instance.imagen != mantenimiento_anterior.imagen:
-        if os.path.isfile(mantenimiento_anterior.image.path):
+        if os.path.isfile(mantenimiento_anterior.imagen.path):
             os.remove(mantenimiento_anterior.imagen.path)
