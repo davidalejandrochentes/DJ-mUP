@@ -43,11 +43,25 @@ def maquina(request):
 
 @login_required
 def alertas(request):
+    horas_alert = get_object_or_404(HorasParaAlerta, id=1)
+    if request.method == 'POST':
+        alert_form = HorasParaAlertaForm(request.POST, instance=horas_alert) 
+        if alert_form.is_valid():
+            horas = alert_form.cleaned_data.get('horas')
+            if horas < 1:
+                return redirect('maquina_alertas')
+            else:
+                alert_form.save()
+                return redirect('maquina_alertas')    
+    else:
+        alert_form = HorasParaAlertaForm(instance=horas_alert)
+    horas_alerta = horas_alert.horas
+    
     alert = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
     alertas = []
     for maquina in alert:
         horas_restantes = maquina.horas_restantes_mantenimiento()
-        if horas_restantes <= 100:
+        if horas_restantes <= horas_alerta:
             
             alertas.append({
                 'maquina': maquina,
@@ -58,6 +72,7 @@ def alertas(request):
     context = {
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
+        'alert_form': alert_form,
     }
     return render(request, 'mUP_maquina/alertas.html', context)
 

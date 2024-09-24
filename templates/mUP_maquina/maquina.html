@@ -37,7 +37,7 @@
         {% for maquina in maquinas %}
         <div class="col-12 col-md-3 card p-0 m-3 custom shadow-lg">
             <a class="text-decoration-none text-dark" href="{% url "detalles_maquina" id=maquina.id %}">
-                <img src="{{ maquina.image.url }}" class="card-img-top" alt="..." style="max-height: 200px; min-height: 200px; object-fit: cover;">
+                <img src="{{ maquina.imagen.url }}" class="card-img-top" alt="..." style="max-height: 200px; min-height: 200px; object-fit: cover;">
                 <div class="card-body custom">
                     <h5 class="card-title">{{ maquina.nombre }}</h5>
                     <p class="card-text m-0"><b>Encargado:</b> {{ maquina.encargado }}</p>

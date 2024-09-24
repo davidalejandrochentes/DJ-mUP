@@ -124,7 +124,7 @@ def eliminar_imagen_anterior_al_actualizar(sender, instance, **kwargs):
         return False  # La máquina anterior no existe, no hay imagen anterior que eliminar
     if maquina_anterior.imagen:  # Verificar si la máquina anterior tiene una imagen
         nueva_imagen = instance.imagen
-        if maquina_anterior.image != nueva_imagen:  # Verificar si se ha seleccionado una nueva imagen
+        if maquina_anterior.imagen != nueva_imagen:  # Verificar si se ha seleccionado una nueva imagen
             if os.path.isfile(maquina_anterior.imagen.path):  # Verificar si el archivo de imagen existe en el sistema de archivos
                 os.remove(maquina_anterior.imagen.path)
 

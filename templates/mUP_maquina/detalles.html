@@ -24,7 +24,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <img src="{{ maquina.image.url }}" class="img-fluid" alt="Imagen">
+                            <img src="{{ maquina.imagen.url }}" class="img-fluid" alt="Imagen">
                         </div>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                             <form class="p-5 rounded-3 bg-body-tertiary sombra-login" action="{% url "detalles_maquina" id=maquina.id %}" method='POST' enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <table>
-                                    {{ form }}
+                                    {{ form.as_table }}
                                 </table>
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-secondary">Guardar</button>

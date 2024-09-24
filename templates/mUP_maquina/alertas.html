@@ -10,6 +10,40 @@
         <a class="text-decoration-none text-dark" href="{% url "maquina" %}">
             <i class="bi bi-arrow-left fs-1"></i>
         </a>
+        <span class="p-3">
+            <button type="button" class="btn imagen shadow rounded-pill custom" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Modificar horas para la alerta <i class="bi bi-pencil-square"></i>
+            </button>
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Atención</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Este valor será utilizado para definir con cuántas horas de diferencia desea que le aparezca la alerta.</p>
+                            <form class="p-5 rounded-3 bg-body-tertiary shadow-lg" action="" method='POST' enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% if messages %}
+                                    <ul class="messages">
+                                        {% for message in messages %}
+                                            <div {% if message.tags %} class="alert alert-danger alerta" role="alert"{% endif %}>{{ message }}</div>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                <table>
+                                    {{ alert_form.as_table }}
+                                </table>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button type="submit" class="btn btn-secondary">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </span>
     </div>
 
     <div class="container cabecera_maquina shadow bg-danger bg-opacity-50 p-4 bw-5">
@@ -21,7 +55,7 @@
         {% for alerta in alertas %}
         <div class="col-12 col-md-4 p-0 card text-bg-danger carta-home m-3 shadow-lg">
             <a class="text-decoration-none text-light" href="{% url "mantenimientos_maquina_correctivo" id=alerta.maquina.id %}">
-                <img src="{{ alerta.maquina.image.url }}" class="card-img-top" alt="..." style="max-height: 200px;">
+                <img src="{{ alerta.maquina.imagen.url }}" class="card-img-top" alt="..." style="max-height: 200px;">
                 <div class="card-body">
                     <h5 class="card-title">{{ alerta.maquina.nombre }}</h5>
                     <p class="card-text m-0"><b>Ultimo mantenimiento:</b> {{ alerta.maquina.fecha_ultimo_mantenimiento }}</p>
