@@ -18,31 +18,39 @@ import requests
 
 @login_required
 def vehiculo(request):
+    km_alerta = KmParaAlerta.objects.first().días
     alert = Vehiculo.objects.all()
     vehiculos = Vehiculo.objects.filter(marca__icontains=request.GET.get('search', ''))
     total_vehiculos = len(vehiculos)
     alertas = []
     for vehiculo in alert:
 
+        km_restantes_mantenimiento_correctivo = vehiculo.km_restantes_mantenimiento_correctivo()
+        if km_restantes_mantenimiento_correctivo <= km_alerta:
+            alertas.append({
+                'vehiculo': vehiculo,
+                'km_restantes': km_restantes_mantenimiento_correctivo,
+            })
+
         # Cambio de filtro de aceite
-        km_restantes_filtro_aceite = vehiculo.km_restantes_cambio_de_filtro_aceite()
-        if km_restantes_filtro_aceite <= 500:
+        km_restantes_filtro_aceite = vehiculo.km_restantes_intervalo_cambio_filtro_aceite()
+        if km_restantes_filtro_aceite <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_aceite,
             })
 
         # Cambio de filtro de aire/combustible
-        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_cambio_filtro_aire_combustible()
-        if km_restantes_filtro_aire_combustible <= 500:
+        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible()
+        if km_restantes_filtro_aire_combustible <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_aire_combustible,
             })
 
         # Cambio de filtro de caja/corona
-        km_restantes_filtro_caja_corona = vehiculo.km_restantes_cambio_filtro_caja_corona()
-        if km_restantes_filtro_caja_corona <= 500:
+        km_restantes_filtro_caja_corona = vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona()
+        if km_restantes_filtro_caja_corona <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_caja_corona,
@@ -63,42 +71,63 @@ def vehiculo(request):
 
 @login_required
 def alertas(request):
+    km_alert = get_object_or_404(KmParaAlerta, id=1)
+    if request.method == 'POST':
+        alert_form = KmParaAlertaForm(request.POST, instance=km_alert)
+        if alert_form.is_valid():
+            km = alert_form.cleaned_data.get('km')
+            if km < 1:
+                return redirect('vehiculo_alertas')
+            else:
+                alert_form.save()
+                return redirect('vehiculo_alertas')
+    else:
+        alert_form = KmParaAlertaForm(instance=km_alert)
+    km_alerta = km_alert.km                   
     search_query = request.GET.get('search', '')
     vehiculos = Vehiculo.objects.filter(marca__icontains=search_query)
     alertas = []
-
+    
     for vehiculo in vehiculos:
-        # Cambio de filtro de aceite
-        km_restantes_filtro_aceite = vehiculo.km_restantes_cambio_de_filtro_aceite()
-        if km_restantes_filtro_aceite <= 500:
+
+        km_restantes_mantenimiento_correctivo = vehiculo.km_restantes_mantenimiento_correctivo()
+        if km_restantes_mantenimiento_correctivo <= km_alerta:
+            alertas.append({
+                'vehiculo': vehiculo,
+                'km_restantes': km_restantes_mantenimiento_correctivo,
+                'tipo': TipoMantenimientoVehiculo.objects.get(id=1).tipo
+            })
+
+        km_restantes_filtro_aceite = vehiculo.km_restantes_intervalo_cambio_filtro_aceite()
+        if km_restantes_filtro_aceite <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_aceite,
                 'tipo': TipoMantenimientoVehiculo.objects.get(id=3).tipo
             })
-        # Cambio de filtro de aire/combustible
-        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_cambio_filtro_aire_combustible()
-        if km_restantes_filtro_aire_combustible <= 500:
+
+        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible()
+        if km_restantes_filtro_aire_combustible <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_aire_combustible,
                 'tipo': TipoMantenimientoVehiculo.objects.get(id=4).tipo
-            })
-        # Cambio de filtro de caja/corona
-        km_restantes_filtro_caja_corona = vehiculo.km_restantes_cambio_filtro_caja_corona()
-        if km_restantes_filtro_caja_corona <= 500:
+            })    
+
+        km_restantes_filtro_caja_corona = vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona()
+        if km_restantes_filtro_caja_corona <= km_alerta:
             alertas.append({
                 'vehiculo': vehiculo,
                 'km_restantes': km_restantes_filtro_caja_corona,
                 'tipo': TipoMantenimientoVehiculo.objects.get(id=5).tipo
-            })
+            })    
 
     alertas_ordenadas = sorted(alertas, key=lambda x: x['km_restantes'])
     total_alertas = len(alertas_ordenadas)
-    
     context = {
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
+        'alert_form': alert_form,
     }
     return render(request, 'SGE_vehiculo/alertas.html', context)
 
@@ -132,36 +161,38 @@ def crear_vehiculo(request):
         form = VehiculoForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
         if form.is_valid():
             intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            intervalo_mantenimiento_cambio_filtro_aceite = form.cleaned_data.get('intervalo_mantenimiento_cambio_filtro_aceite')
-            intervalo_mantenimiento_cambio_filtro_aire_combustible = form.cleaned_data.get('intervalo_mantenimiento_cambio_filtro_aire_combustible')
-            intervalo_mantenimiento_cambio_filtro_caja_corona = form.cleaned_data.get('intervalo_mantenimiento_cambio_filtro_caja_corona')
+            
+            intervalo_cambio_filtro_aceite = form.cleaned_data.get('intervalo_cambio_filtro_aceite')
+            intervalo_cambio_filtro_aire_combustible = form.cleaned_data.get('intervalo_cambio_filtro_aire_combustible')
+            intervalo_cambio_aceite_caja_corona = form.cleaned_data.get('intervalo_cambio_aceite_caja_corona')
+            
             if intervalo_mantenimiento < 0:
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
                 return render(request, 'SGE_vehiculo/nuevo.html', context)
-            if intervalo_mantenimiento_cambio_filtro_aceite  < 0:
-                form.add_error('intervalo_mantenimiento_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo')
+            if intervalo_cambio_filtro_aceite  < 0:
+                form.add_error('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
                 return render(request, 'SGE_vehiculo/nuevo.html', context)
-            if intervalo_mantenimiento_cambio_filtro_aire_combustible < 0:
-                form.add_error('intervalo_mantenimiento_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo')
+            if intervalo_cambio_filtro_aire_combustible < 0:
+                form.add_error('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
                 return render(request, 'SGE_vehiculo/nuevo.html', context)
-            if intervalo_mantenimiento_cambio_filtro_caja_corona < 0:
-                form.add_error('intervalo_mantenimiento_cambio_filtro_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
+            if intervalo_cambio_aceite_caja_corona < 0:
+                form.add_error('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
                 return render(request, 'SGE_vehiculo/nuevo.html', context)            
             else:
-                if 'image' in request.FILES:
-                    form.instance.image = request.FILES['image']
+                if 'imagen' in request.FILES:
+                    form.instance.imagen = request.FILES['imagen']
                 form.save()
                 return redirect('vehiculo')
         else:

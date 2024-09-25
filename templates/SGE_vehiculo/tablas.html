@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+
+{% block 'title'%} Tablas de mantenimiento {% endblock %}
+
+{% block 'content' %}
+
+<div class="container">
+    <div class="d-flex p-2 justify-content-between">
+        <a class="text-decoration-none text-dark" href="{% url "vehiculo" %}">
+            <i class="bi bi-arrow-left fs-1"></i>
+        </a>
+        
+        <form class="d-flex mt-auto mb-auto" action="{% url 'documento_general_mantenimientos_vehiculo' %}" method="get" style="max-height: 50px; min-width: 600px;">
+          <label class="mt-auto mb-auto m-1" for="tipo_mantenimiento">Tipo:</label>
+            <select class="form-select form-select-sm m-1 shadow rounded-pill" name="tipo_mantenimiento" id="tipo_mantenimiento">
+                <option value="">Todos los tipos de mantenimiento</option>
+                {% for tipo_mantenimiento in tipos_mantenimiento %}
+                    <option value="{{ tipo_mantenimiento.id }}">{{ tipo_mantenimiento.tipo }}</option>
+                {% endfor %}
+            </select>
+          <label class="mt-auto mb-auto m-1" for="mes">Mes:</label>
+          <select class="form-select form-select-sm m-1 shadow rounded-pill" name="mes" id="mes">
+            <option value="">Todos los meses</option>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
+          <label class="mt-auto mb-auto m-1" for="anio">Año:</label>
+          <select class="form-select form-select-sm m-1 shadow rounded-pill" name="anio" id="anio">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+          </select>
+          <button type="submit" value="Submit" class="btn custom d-flex m-1 shadow rounded-pill">Descargar  <i class="bi bi-box-arrow-down mt-auto mb-auto"></i></button>
+        </form>
+    </div>
+    
+    <div class="table-responsive">
+    <table class="table table-striped mt-4 shadow">
+      <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
+        <th>Vehículos</th>
+        <th>Descripción corta del mantenimiento</th>
+      </tr>
+      {% for vehiculo in vehiculos %}
+      <tr>
+        <td>{{ vehiculo.marca }},{{ vehiculo.modelo }}</td>
+        <td>
+          <ul class="list-group list-group-flush">
+            {% for mantenimiento in vehiculo.mantenimientos %}
+            <li class="list-group-item">*<b>Fecha de inicio</b> {{ mantenimiento.fecha_inicio }} - {{ mantenimiento.hora_inicio }}, <b>fecha de fin</b> {{ mantenimiento.fecha_fin }} - {{ mantenimiento.hora_fin }}, <b>tipo de mantenimiento</b> - {{ mantenimiento.tipo }}, <b>Hr vehiculo</b> {{ mantenimiento.km_recorridos }}*</li>
+            {% endfor %}
+          </ul>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    </div>
+</div>
+
+{% endblock %}
