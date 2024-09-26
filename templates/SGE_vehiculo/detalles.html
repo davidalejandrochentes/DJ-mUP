@@ -12,8 +12,6 @@
             <i class="bi bi-arrow-left fs-1"></i>
         </a>
         <span class="p-3">
-
-            <a class="btn custom shadow rounded-pill viajes" href="{% url "viaje" id=vehiculo.id %}">viajes <i class="bi bi-car-front"></i></a>
             
             <button type="button" class="btn custom imagen shadow rounded-pill" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Ver Imagen <i class="bi bi-image"></i>
@@ -26,7 +24,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <img src="{{ vehiculo.image.url }}" class="img-fluid" alt="Imagen">
+                            <img src="{{ vehiculo.imagen.url }}" class="img-fluid" alt="Imagen">
                         </div>
                     </div>
                 </div>
@@ -46,7 +44,7 @@
                             <form class="p-5 rounded-3 bg-body-tertiary sombra-login" action="{% url "detalles_vehiculo" id=vehiculo.id %}" method='POST' enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <table>
-                                    {{ form }}
+                                    {{ form.as_table }}
                                 </table>
                                 <div class="d-grid gap-2 mt-3">
                                     <button type="submit" class="btn btn-secondary">Guardar</button>
@@ -95,9 +93,36 @@
                     <th scope="col">Marca</th>
                     <th scope="col">Modelo</th>
                     <th scope="col">Matrícula</th>
-                    <th scope="col">número_de_chasis</th>
-                    <th scope="col">Motor</th>
+                    <th scope="col">Número_de_chasis</th>
+                    <th scope="col">Capacidad de carga</th>
+                    <th scope="col">uso_del_vehiculo</th>
                     <th scope="col">KM recorridos</th>
+                    <th scope="col">Nombre del Chofer</th>
+                    <th scope="col">Teléfono del chofer</th>
+                    <th scope="col">Dirección del chofer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ vehiculo.marca }}</td>
+                    <td>{{ vehiculo.modelo }}</td>
+                    <td>{{ vehiculo.matrícula }}</td>
+                    <td>{{ vehiculo.número_de_chasis }}</td>
+                    <td>{{ vehiculo.capacidad_de_carga }}</td>
+                    <td>{{ vehiculo.uso_del_vehiculo }}</td>
+                    <td>{{ vehiculo.km_recorridos }}</td>
+                    <td>{{ vehiculo.nombre_chofer }}</td>
+                    <td>{{ vehiculo.teléfono_chofer }}</td>
+                    <td>{{ vehiculo.dirección_chofer }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="table-responsive mt-1">
+        <table class="table table-striped shadow">
+            <thead>
+                <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
                     <th scope="col">Intervalo de mantenimiento correctivo</th>
                     <th scope="col">Intervalo para cambio del filtro de aceite</th>
                     <th scope="col">Intervalo para cambio del filtro de aire y combustible</th>
@@ -106,40 +131,10 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ vehiculo.marca }}</td>
-                    <td>{{ vehiculo.modelo }}</td>
-                    <td>{{ vehiculo.matricula }}</td>
-                    <td>{{ vehiculo.número_de_chasis }}</td>
-                    <td>{{ vehiculo.motor }}</td>
-                    <td>{{ vehiculo.km_recorridos }}</td>
                     <td>{{ vehiculo.intervalo_mantenimiento }}</td>
-                    <td>{{ vehiculo.intervalo_mantenimiento_cambio_filtro_aceite }}</td>
-                    <td>{{ vehiculo.intervalo_mantenimiento_cambio_filtro_aire_combustible }}</td>
-                    <td>{{ vehiculo.intervalo_mantenimiento_cambio_filtro_caja_corona }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <h3 class="mt-1 text-uppercase">Datos del chofer</h3>
-    <div class="table-responsive">
-        <table class="table table-striped shadow">
-            <thead>
-                <tr class="border border-end-0 border-start-0 border-top-0 border-3 border-dark-subtle">
-                    <th scope="col">Nombre del Chofer</th>
-                    <th scope="col">Nombre de Usuario</th>
-                    <th scope="col">Contraseña del chofer</th>
-                    <th scope="col">Teléfono del chofer</th>
-                    <th scope="col">Dirección del chofer</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ vehiculo.nombre_chofer }}</td>
-                    <td>{{ vehiculo.nombre_usuario_chofer }}</td>
-                    <td>{{ vehiculo.contraseña_chofer }}</td>
-                    <td>{{ vehiculo.teléfono_chofer }}</td>
-                    <td>{{ vehiculo.dirección_chofer }}</td>
+                    <td>{{ vehiculo.intervalo_cambio_filtro_aceite }}</td>
+                    <td>{{ vehiculo.intervalo_cambio_filtro_aire_combustible }}</td>
+                    <td>{{ vehiculo.intervalo_cambio_aceite_caja_corona }}</td>
                 </tr>
             </tbody>
         </table>
@@ -173,7 +168,7 @@
         </div>
         <div class="col-12 col-md-2 p-0 card m-3 shadow-lg custom">
             <a class="text-decoration-none text-dark" href="{% url "mantenimientos_vehiculo_cambio_filtro_aire_combustible" id=vehiculo.id %}">
-                <img src="{% static "images/filtro-del-aire-coche--860x573.jpg" %}" class="card-img-top" alt="..." style="max-height: 100px;">
+                <img src="{% static "images/filtro-del-aire-coche - 860x573.jpg" %}" class="card-img-top" alt="..." style="max-height: 100px;">
                 <div class="card-body custom">
                     <h6 class="card-title text-uppercase">Cambio del filtro de aire y combustible</h6>
                 </div>
