@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div class="container cabecera shadow bg-secondary bg-opacity-50 p-4 bw-5">
+    <div class="container cabecera_vehiculo shadow bg-secondary bg-opacity-50 p-4 bw-5">
         <h1 class="text-center text-light text-uppercase display-1"><strong>vehículos</strong></h1>
         <h5 class="text-center text-light text-uppercase">Cantidad total: {{ total_vehiculos }}</h5>
     </div>
@@ -36,10 +36,10 @@
         {% for vehiculo in vehiculos %}
         <div class="col-12 col-md-3 card custom p-0 m-3 shadow-lg">
             <a class="text-decoration-none text-dark" href="{% url "detalles_vehiculo" id=vehiculo.id %}">
-                <img src="{{ vehiculo.image.url }}" class="card-img-top" alt="..." style="max-height: 200px; min-height: 200px; object-fit: cover;">
+                <img src="{{ vehiculo.imagen.url }}" class="card-img-top" alt="..." style="max-height: 200px; min-height: 200px; object-fit: cover;">
                 <div class="card-body custom">
                     <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
-                    <p class="card-text m-0"><b>Matricula:</b> {{ vehiculo.matricula }}</p>
+                    <p class="card-text m-0"><b>Matricula:</b> {{ vehiculo.matrícula }}</p>
                     <p class="card-text m-0"><b>Km Recorridos:</b> {{ vehiculo.km_recorridos }}</p>
                     <p class="card-text m-0"><b>Chofer:</b> {{ vehiculo.nombre_chofer }}</p>
                 </div>      

@@ -10,15 +10,13 @@ from django.contrib.auth.forms import AuthenticationForm
 import openpyxl
 from openpyxl.styles import Font, PatternFill
 
-import requests
-
 
 
 # vistas generales ----------------------------------------------------------------------------
 
 @login_required
 def vehiculo(request):
-    km_alerta = KmParaAlerta.objects.first().días
+    km_alerta = KmParaAlerta.objects.first().km
     alert = Vehiculo.objects.all()
     vehiculos = Vehiculo.objects.filter(marca__icontains=request.GET.get('search', ''))
     total_vehiculos = len(vehiculos)
@@ -299,157 +297,6 @@ def eliminar(request, id):
 # fin de vistas generales----------------------------------------------------------------------------------
 
 
-
-#viajes---------------------------------------------------------------------------------------------------
-def viaje(request, id):
-    vehiculo = get_object_or_404(Vehiculo, id=id)
-    viajes = vehiculo.viaje_set.all().order_by('-fecha_llegada', '-hora_llegada')
-    ultimo_viaje = vehiculo.viaje_set.last()
-    context = {
-        'vehiculo': vehiculo,
-        'viajes': viajes,
-        'ultimo_viaje': ultimo_viaje,
-    }
-    return render(request, 'SGE_vehiculo/viajes.html', context)
-
-
-
-
-def log_in_vehiculo(request):
-    if request.method =='GET':
-        return render(request, 'SGE_vehiculo/log.html', {'form': AuthenticationForm})
-    else:
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        try:
-            vehiculo = Vehiculo.objects.get(nombre_usuario_chofer=username, contraseña_chofer=password)
-            return redirect('viaje', id=vehiculo.id)
-        except Vehiculo.DoesNotExist:
-            messages.error(request, "El usuario no existe, o la contraseña es incorrecta")
-            return render(request, 'SGE_vehiculo/log.html', {'form': AuthenticationForm})
-
-
-
-
-def nuevo_viaje_vehiculo(request, id):
-    if request.method == 'GET':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        try:
-            response = requests.get('http://worldtimeapi.org/api/timezone/America/Guayaquil')
-            if response.status_code == 200:
-                current_time = response.json()['datetime']
-                current_date, current_time = current_time.split('T')
-                current_time = current_time.split('.')[0]  # Quita la parte de los milisegundos
-            else:
-                current_date = date.today().isoformat()
-                current_time = datetime.now().time().isoformat()
-        except requests.RequestException:
-            current_date = date.today().isoformat()
-            current_time = datetime.now().time().isoformat()
-
-        initial_data = {
-            'kilometraje_de_salida': vehiculo.km_recorridos,
-            'fecha_salida': current_date,
-            'hora_salida': current_time
-        }
-        viaje_form = ViajeVehiculoForm(initial=initial_data)
-    
-        context = {
-            'viaje_form': viaje_form,
-            'vehiculo': vehiculo,
-        }
-        return render(request, 'SGE_vehiculo/nuevo_viaje.html', context)
-
-    if request.method == 'POST':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        viaje_form = ViajeVehiculoForm(request.POST, request.FILES)
-
-        if viaje_form.is_valid():
-            viaje = viaje_form.save(commit=False)
-            viaje.vehiculo = vehiculo
-            viaje.kilometraje_de_llegada = int(request.POST.get('kilometraje_de_salida'))
-            viaje.save()
-            return redirect('viaje', id=vehiculo.id)
-        else:
-            context = {
-                'viaje_form': viaje_form,
-                'vehiculo': vehiculo,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-            return render(request, 'SGE_vehiculo/nuevo_viaje.html', context)
-
-    return HttpResponse("Method Not Allowed", status=405)
-
-
-
-
-def mod_viaje_vehiculo_admin(request, id):
-    try:
-        if request.method == 'GET':
-            viaje = get_object_or_404(Viaje, id=id)
-            vehiculo = viaje.vehiculo
-            
-            try:
-                response = requests.get('http://worldtimeapi.org/api/timezone/America/Guayaquil')
-                if response.status_code == 200:
-                    current_time = response.json()['datetime']
-                    current_date, current_time = current_time.split('T')
-                    current_time = current_time.split('.')[0]  # Quita la parte de los milisegundos
-                else:
-                    current_date = date.today().isoformat()
-                    current_time = datetime.now().time().isoformat()
-            except requests.RequestException:
-                current_date = date.today().isoformat()
-                current_time = datetime.now().time().isoformat()
-
-            initial_data = {
-                'fecha_llegada': current_date,
-                'hora_llegada': current_time
-            }
-            
-            form_viaje = ViajeVehiculoModAdminForm(instance=viaje, initial=initial_data)
-            
-            context = {
-                'form_viaje': form_viaje,
-                'vehiculo': vehiculo,
-            }
-            return render(request, 'SGE_vehiculo/mod_viaje.html', context)
-
-        if request.method == 'POST':
-            viaje = get_object_or_404(Viaje, id=id)
-            vehiculo = viaje.vehiculo
-            form_viaje = ViajeVehiculoModAdminForm(request.POST, request.FILES, instance=viaje)
-
-            if form_viaje.is_valid():
-                viaje = form_viaje.save(commit=False)
-                viaje.vehiculo = vehiculo
-                viaje.save()
-                return redirect('viaje', id=vehiculo.id)
-            else:
-                context = {
-                    'form_viaje': form_viaje,
-                    'vehiculo': vehiculo,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-                return render(request, 'SGE_vehiculo/mod_viaje.html', context)
-
-    except Exception as e:
-        messages.error(request, f"Ha ocurrido un error: {str(e)}")
-        return render(request, 'SGE_vehiculo/mod_viaje.html', {'form_viaje': form_viaje, 'vehiculo': vehiculo})
-
-    return HttpResponse("Method Not Allowed", status=405) 
-
-
-
-
-@login_required
-def eliminar_viaje(request, id):
-    viaje = get_object_or_404(Viaje, id=id)
-    viaje.delete()
-    previous_url = request.META.get('HTTP_REFERER')
-    return HttpResponseRedirect(previous_url)
-#---------------------------------------------------------------------------------------------------------------
 
 
 

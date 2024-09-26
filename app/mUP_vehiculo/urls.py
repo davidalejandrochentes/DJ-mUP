@@ -9,12 +9,6 @@ urlpatterns = [
     path('detalles/<int:id>', views.detalles, name="detalles_vehiculo"),
     path('delete/<int:id>', views.eliminar, name="eliminar_vehiculo"),
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_vehiculo"),
-    
-    path('log_in_vehiculo', views.log_in_vehiculo, name="log_in_vehiculo"),
-    path('viaje/<int:id>', views.viaje, name="viaje"),
-    path('nuevo_viaje_vehiculo/<int:id>', views.nuevo_viaje_vehiculo, name="nuevo_viaje_vehiculo"),
-    path('eliminar_viaje/<int:id>', views.eliminar_viaje, name="eliminar_viaje"),
-    path('mod_viaje_vehiculo_admin/<int:id>', views.mod_viaje_vehiculo_admin, name="mod_viaje_vehiculo_admin"),
 
     path('mantenimientos_vehiculo_preventivo/<int:id>', views.mantenimientos_vehiculo_preventivo, name="mantenimientos_vehiculo_preventivo"),
     path('mod_mantenimineto_vehiculo_preventivo/<int:id>', views.mod_mantenimineto_vehiculo_preventivo, name="mod_mantenimineto_vehiculo_preventivo"),
