@@ -456,7 +456,7 @@ def documento_general_mantenimientos_vehiculo(request):
     mantenimientos = MantenimientoVehiculo.objects.filter(fecha_fin__year=anio)
 
     if mes:
-        mantenimientos = mantenimientos.filter(fecha__month=mes)
+        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
 
     if tipo_mantenimiento_id:  # Si se seleccionó un tipo de mantenimiento
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, pk=tipo_mantenimiento_id)
@@ -513,11 +513,13 @@ def documento_general_mantenimientos_vehiculo(request):
 
 
 
+
 @login_required
-def documento_mantenimientos_preventivos_vehiculo(request, id):
+def documento_mantenimientos_vehiculo(request, id, mant):
     mes = request.GET.get('mes')
     anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 2
+    tipo_mantenimiento_id = mant
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
 
     vehiculo = get_object_or_404(Vehiculo, pk=id)
     mantenimientos = MantenimientoVehiculo.objects.filter(vehiculo=vehiculo).order_by('-fecha_fin', '-hora_fin')
@@ -532,74 +534,9 @@ def documento_mantenimientos_preventivos_vehiculo(request, id):
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, vehiculo.marca, vehiculo.modelo, mes, anio)
     else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Operador', 'Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Km Recorridos', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.operador,
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.km_recorridos,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_mantenimientos_correctivos_vehiculo(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 1
-
-    vehiculo = get_object_or_404(Vehiculo, pk=id)
-    mantenimientos = MantenimientoVehiculo.objects.filter(vehiculo=vehiculo).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivos_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivos_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, vehiculo.marca, vehiculo.modelo, anio)
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -623,264 +560,6 @@ def documento_mantenimientos_correctivos_vehiculo(request, id):
             mantenimiento.km_recorridos,
             mantenimiento.partes_y_piezas,
             mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_mantenimientos_cambio_filtro_aceite_vehiculo(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 3
-
-    vehiculo = get_object_or_404(Vehiculo, pk=id)
-    mantenimientos = MantenimientoVehiculo.objects.filter(vehiculo=vehiculo).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_aceite_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_aceite_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Operador', 'Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Km Recorridos', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.operador,
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.km_recorridos,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_mantenimientos_cambio_filtro_aire_combustible_vehiculo(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 4
-
-    vehiculo = get_object_or_404(Vehiculo, pk=id)
-    mantenimientos = MantenimientoVehiculo.objects.filter(vehiculo=vehiculo).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_aire_combustible_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_aire_combustible_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Operador', 'Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Km Recorridos', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.operador,
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.km_recorridos,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_mantenimientos_cambio_filtro_caja_corona_vehiculo(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 5
-
-    vehiculo = get_object_or_404(Vehiculo, pk=id)
-    mantenimientos = MantenimientoVehiculo.objects.filter(vehiculo=vehiculo).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_caja_corona_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_cambio_filtro_caja_corona_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Operador', 'Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Km Recorridos', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.operador,
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.km_recorridos,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_viajes_vehiculo(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-
-    vehiculo = get_object_or_404(Vehiculo, pk=id)
-    viajes = Viaje.objects.filter(vehiculo=vehiculo).order_by('-fecha_llegada', '-hora_llegada')
-
-    if mes:
-        viajes = viajes.filter(fecha_llegada__month=mes)
-    if anio:
-        viajes = viajes.filter(fecha_llegada__year=anio)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="viajes_de_{}_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="viajes_de_{}_{}_{}.xlsx"'.format(vehiculo.marca, vehiculo.modelo, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Origen', 'Destino', 'Conductor', 'Fecha de salida', 'Hora de salida', 'Kilometraje de salida', 'Fecha de llegada', 'Hora de llegada', 'Kilometraje de llegada']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for viaje in viajes:
-        ws.append([
-            viaje.origen,
-            viaje.destino,
-            viaje.conductor,
-            viaje.fecha_salida,
-            viaje.hora_salida,
-            viaje.kilometraje_de_salida,
-            viaje.fecha_llegada,
-            viaje.hora_llegada,
-            viaje.kilometraje_de_llegada,
         ])
 
     # Ajusta el ancho de las columnas automáticamente

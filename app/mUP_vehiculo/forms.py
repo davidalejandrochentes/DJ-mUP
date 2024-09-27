@@ -60,14 +60,21 @@ class MantenimientoVehiculoForm(forms.ModelForm):
         fecha_fin = cleaned_data.get('fecha_fin')
         km_recorridos = cleaned_data.get('km_recorridos')
         
-        if fecha_inicio > date.today():
-            self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
-        
-        if fecha_fin > date.today():
-            self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+        if fecha_inicio:
+            if fecha_inicio > date.today():
+                self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
+        else:
+            self.add_error('fecha_inicio', 'La fecha de inicio es obligatoria. el formato correcto es "dd/mm/aaaa"')
 
-        if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
-            self.add_error('fecha_inicio', 'La fecha de inicio no puede ser posterior a la fecha de fin.')
+        if fecha_fin:
+            if fecha_fin > date.today():
+                self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+        else:
+            self.add_error('fecha_fin', 'La fecha de fin es obligatoria. el formato correcto es dd/mm/aaaa')
+
+        if fecha_inicio and fecha_fin:
+            if fecha_inicio > fecha_fin:
+                self.add_error('fecha_inicio', 'La fecha de inicio no puede ser posterior a la fecha de fin.')
         
         if km_recorridos < 1:
             self.add_error('km_recorridos', 'El valor de "km recorridos" no puede ser un número negativo')

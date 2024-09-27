@@ -15,10 +15,5 @@ urlpatterns = [
     path('nuevo_mantenimineto_vehiculo/<int:id>/<int:mant>', views.nuevo_mantenimineto_vehiculo, name="nuevo_mantenimineto_vehiculo"),
 
     path('documento_general_mantenimientos_vehiculo/', views.documento_general_mantenimientos_vehiculo, name='documento_general_mantenimientos_vehiculo'),
-    path('documento_mantenimientos_preventivos_vehiculo/<int:id>/', views.documento_mantenimientos_preventivos_vehiculo, name='documento_mantenimientos_preventivos_vehiculo'),
-    path('documento_mantenimientos_correctivos_vehiculo/<int:id>/', views.documento_mantenimientos_correctivos_vehiculo, name='documento_mantenimientos_correctivos_vehiculo'),
-    path('documento_mantenimientos_cambio_filtro_aceite_vehiculo/<int:id>/', views.documento_mantenimientos_cambio_filtro_aceite_vehiculo, name='documento_mantenimientos_cambio_filtro_aceite_vehiculo'),
-    path('documento_mantenimientos_cambio_filtro_aire_combustible_vehiculo/<int:id>/', views.documento_mantenimientos_cambio_filtro_aire_combustible_vehiculo, name='documento_mantenimientos_cambio_filtro_aire_combustible_vehiculo'),
-    path('documento_mantenimientos_cambio_filtro_caja_corona_vehiculo/<int:id>/', views.documento_mantenimientos_cambio_filtro_caja_corona_vehiculo, name='documento_mantenimientos_cambio_filtro_caja_corona_vehiculo'),
-    path('documento_viajes_vehiculo/<int:id>/', views.documento_viajes_vehiculo, name='documento_viajes_vehiculo'),
+    path('documento_mantenimientos_vehiculo/<int:id>//<int:mant>', views.documento_mantenimientos_vehiculo, name='documento_mantenimientos_vehiculo'),
 ]

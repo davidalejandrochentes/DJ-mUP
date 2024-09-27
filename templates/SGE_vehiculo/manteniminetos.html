@@ -22,7 +22,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form class="" action="{% url 'documento_mantenimientos_preventivos_vehiculo' id=vehiculo.id %}" method="get">
+                        <form class="" action="{% url 'documento_mantenimientos_vehiculo' id=vehiculo.id mant=tipo_mantenimiento.id %}" method="get">
                             <label class="" for="mes">Mes:</label>
                             <select class="form-select form-select-sm" name="mes" id="mes">
                                 <option value="">Todos los meses</option>
