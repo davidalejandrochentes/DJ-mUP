@@ -10,26 +10,10 @@ urlpatterns = [
     path('delete/<int:id>', views.eliminar, name="eliminar_vehiculo"),
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_vehiculo"),
 
-    path('mantenimientos_vehiculo_preventivo/<int:id>', views.mantenimientos_vehiculo_preventivo, name="mantenimientos_vehiculo_preventivo"),
-    path('mod_mantenimineto_vehiculo_preventivo/<int:id>', views.mod_mantenimineto_vehiculo_preventivo, name="mod_mantenimineto_vehiculo_preventivo"),
-    path('nuevo_mantenimineto_vehiculo_preventivo/<int:id>', views.nuevo_mantenimineto_vehiculo_preventivo, name="nuevo_mantenimineto_vehiculo_preventivo"),
+    path('mantenimientos_vehiculo/<int:id>/<int:mant>', views.mantenimientos_vehiculo, name="mantenimientos_vehiculo"),
+    path('mod_mantenimineto_vehiculo/<int:id>/<int:mant>', views.mod_mantenimineto_vehiculo, name="mod_mantenimineto_vehiculo"),
+    path('nuevo_mantenimineto_vehiculo/<int:id>/<int:mant>', views.nuevo_mantenimineto_vehiculo, name="nuevo_mantenimineto_vehiculo"),
 
-    path('mantenimientos_vehiculo_correctivo/<int:id>', views.mantenimientos_vehiculo_correctivo, name="mantenimientos_vehiculo_correctivo"),
-    path('mod_mantenimineto_vehiculo_correctivo/<int:id>', views.mod_mantenimineto_vehiculo_correctivo, name="mod_mantenimineto_vehiculo_correctivo"),
-    path('nuevo_mantenimineto_vehiculo_correctivo/<int:id>', views.nuevo_mantenimineto_vehiculo_correctivo, name="nuevo_mantenimineto_vehiculo_correctivo"),
-    
-    path('mantenimientos_vehiculo_cambio_filtro_aceite/<int:id>', views.mantenimientos_vehiculo_cambio_filtro_aceite, name="mantenimientos_vehiculo_cambio_filtro_aceite"),
-    path('mod_mantenimineto_vehiculo_cambio_filtro_aceite/<int:id>', views.mod_mantenimineto_vehiculo_cambio_filtro_aceite, name="mod_mantenimineto_vehiculo_cambio_filtro_aceite"),
-    path('nuevo_mantenimineto_vehiculo_cambio_filtro_aceite/<int:id>', views.nuevo_mantenimineto_vehiculo_cambio_filtro_aceite, name="nuevo_mantenimineto_vehiculo_cambio_filtro_aceite"),
-
-    path('mantenimientos_vehiculo_cambio_filtro_aire_combustible/<int:id>', views.mantenimientos_vehiculo_cambio_filtro_aire_combustible, name="mantenimientos_vehiculo_cambio_filtro_aire_combustible"),
-    path('mod_mantenimineto_vehiculo_cambio_filtro_aire_combustible/<int:id>', views.mod_mantenimineto_vehiculo_cambio_filtro_aire_combustible, name="mod_mantenimineto_vehiculo_cambio_filtro_aire_combustible"),
-    path('nuevo_mantenimineto_vehiculo_cambio_filtro_aire_combustible/<int:id>', views.nuevo_mantenimineto_vehiculo_cambio_filtro_aire_combustible, name="nuevo_mantenimineto_vehiculo_cambio_filtro_aire_combustible"),
-
-    path('mantenimientos_vehiculo_cambio_filtro_caja_corona/<int:id>', views.mantenimientos_vehiculo_cambio_filtro_caja_corona, name="mantenimientos_vehiculo_cambio_filtro_caja_corona"),
-    path('mod_mantenimineto_vehiculo_cambio_filtro_caja_corona/<int:id>', views.mod_mantenimineto_vehiculo_cambio_filtro_caja_corona, name="mod_mantenimineto_vehiculo_cambio_filtro_caja_corona"),
-    path('nuevo_mantenimineto_vehiculo_cambio_filtro_caja_corona/<int:id>', views.nuevo_mantenimineto_vehiculo_cambio_filtro_caja_corona, name="nuevo_mantenimineto_vehiculo_cambio_filtro_caja_corona"),
-    
     path('documento_general_mantenimientos_vehiculo/', views.documento_general_mantenimientos_vehiculo, name='documento_general_mantenimientos_vehiculo'),
     path('documento_mantenimientos_preventivos_vehiculo/<int:id>/', views.documento_mantenimientos_preventivos_vehiculo, name='documento_mantenimientos_preventivos_vehiculo'),
     path('documento_mantenimientos_correctivos_vehiculo/<int:id>/', views.documento_mantenimientos_correctivos_vehiculo, name='documento_mantenimientos_correctivos_vehiculo'),

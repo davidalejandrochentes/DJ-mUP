@@ -69,7 +69,7 @@ class MantenimientoVehiculoForm(forms.ModelForm):
         if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
             self.add_error('fecha_inicio', 'La fecha de inicio no puede ser posterior a la fecha de fin.')
         
-        if km_recorridos > 0:
+        if km_recorridos < 1:
             self.add_error('km_recorridos', 'El valor de "km recorridos" no puede ser un número negativo')
         
         return cleaned_data

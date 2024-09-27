@@ -117,7 +117,7 @@ def revertir_fecha_ultimo_mantenimiento(sender, instance, **kwargs):
         ultimo_mantenimiento = mantenimientos_restantes.first()
         vehiculo.fecha_ultimo_mantenimiento = ultimo_mantenimiento.fecha_fin
     else:
-        vehiculo.fecha_ultimo_mantenimiento = None  # Otra opción si no hay mantenimientos restantes
+        vehiculo.fecha_ultimo_mantenimiento = date.today()  # Otra opción si no hay mantenimientos restantes
     vehiculo.save()
 
 
