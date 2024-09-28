@@ -62,7 +62,7 @@ def vehiculo(request):
         'alertas': alertas_ordenadas,
         'total_alertas': total_alertas,
     }
-    return render(request, 'SGE_vehiculo/vehiculo.html', context)
+    return render(request, 'mUP_vehiculo/vehiculo.html', context)
 
 
 
@@ -127,7 +127,7 @@ def alertas(request):
         'total_alertas': total_alertas,
         'alert_form': alert_form,
     }
-    return render(request, 'SGE_vehiculo/alertas.html', context)
+    return render(request, 'mUP_vehiculo/alertas.html', context)
 
 
 
@@ -142,7 +142,7 @@ def tabla_mantenimientos(request):
         'vehiculos': vehiculos,
         'tipos_mantenimiento': tipos_mantenimiento,
     }
-    return render(request, 'SGE_vehiculo/tablas.html', context) 
+    return render(request, 'mUP_vehiculo/tablas.html', context) 
 
 
 
@@ -154,7 +154,7 @@ def crear_vehiculo(request):
         context = {
             'form': form
         }
-        return render(request, 'SGE_vehiculo/nuevo.html', context)
+        return render(request, 'mUP_vehiculo/nuevo.html', context)
     if request.method == 'POST':
         form = VehiculoForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
         if form.is_valid():
@@ -169,31 +169,31 @@ def crear_vehiculo(request):
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_vehiculo/nuevo.html', context)
+                return render(request, 'mUP_vehiculo/nuevo.html', context)
             if intervalo_mantenimiento < 1:
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_vehiculo/nuevo.html', context)
+                return render(request, 'mUP_vehiculo/nuevo.html', context)
             if intervalo_cambio_filtro_aceite  < 1:
                 form.add_error('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_vehiculo/nuevo.html', context)
+                return render(request, 'mUP_vehiculo/nuevo.html', context)
             if intervalo_cambio_filtro_aire_combustible < 1:
                 form.add_error('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_vehiculo/nuevo.html', context)
+                return render(request, 'mUP_vehiculo/nuevo.html', context)
             if intervalo_cambio_aceite_caja_corona < 1:
                 form.add_error('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
                 context = {
                     'form': form
                 }
-                return render(request, 'SGE_vehiculo/nuevo.html', context)            
+                return render(request, 'mUP_vehiculo/nuevo.html', context)            
             else:
                 if 'imagen' in request.FILES:
                     form.instance.imagen = request.FILES['imagen']
@@ -204,7 +204,7 @@ def crear_vehiculo(request):
                 'form': form
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'SGE_vehiculo/nuevo.html', context)    
+            return render(request, 'mUP_vehiculo/nuevo.html', context)    
 
 
 
@@ -221,7 +221,7 @@ def detalles(request, id):
             'id': id,
             'mantenimientos': mantenimientos,
         }
-        return render(request, 'SGE_vehiculo/detalles.html', context)
+        return render(request, 'mUP_vehiculo/detalles.html', context)
     
     if request.method == 'POST':
         vehiculo = get_object_or_404(Vehiculo, id=id)
@@ -298,7 +298,7 @@ def detalles(request, id):
                     'id': id,
                     'mantenimientos': mantenimientos,
                 }
-                return render(request, 'SGE_vehiculo/detalles.html', context) 
+                return render(request, 'mUP_vehiculo/detalles.html', context) 
         
         else:
             previous_url = request.META.get('HTTP_REFERER')
@@ -338,11 +338,11 @@ def mantenimientos_vehiculo(request, id, mant):
             'tipo_mantenimiento': tipo_mantenimiento,
             'mantenimientos': mantenimientos,
         }
-        return render(request, 'SGE_vehiculo/manteniminetos.html', context)
+        return render(request, 'mUP_vehiculo/manteniminetos.html', context)
 
 
 @login_required
-def nuevo_mantenimineto_vehiculo(request, id, mant):
+def nuevo_mantenimiento_vehiculo(request, id, mant):
     if request.method == 'GET':
         vehiculo = get_object_or_404(Vehiculo, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
@@ -352,7 +352,7 @@ def nuevo_mantenimineto_vehiculo(request, id, mant):
             'vehiculo': vehiculo,
             'tipo_mantenimiento': tipo_mantenimiento,
         }
-        return render(request, 'SGE_vehiculo/nuevo_mantenimineto.html', context)
+        return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
 
     if request.method == 'POST':
         vehiculo = get_object_or_404(Vehiculo, id=id)
@@ -373,7 +373,7 @@ def nuevo_mantenimineto_vehiculo(request, id, mant):
                     'tipo_mantenimiento': tipo_mantenimiento,
                 }
                 messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")     
-                return render(request, 'SGE_vehiculo/nuevo_mantenimineto.html', context)
+                return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
             else:
                 mantenimiento.save()
                 return redirect('mantenimientos_vehiculo', id=vehiculo.id, mant=mant)
@@ -384,14 +384,14 @@ def nuevo_mantenimineto_vehiculo(request, id, mant):
                 'tipo_mantenimiento': tipo_mantenimiento,
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-            return render(request, 'SGE_vehiculo/nuevo_mantenimineto.html', context)
+            return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
 
     return HttpResponse("Method Not Allowed", status=405)        
 
 
 
 @login_required
-def mod_mantenimineto_vehiculo(request, id, mant):
+def mod_mantenimiento_vehiculo(request, id, mant):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoVehiculo, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
@@ -402,7 +402,7 @@ def mod_mantenimineto_vehiculo(request, id, mant):
             'vehiculo': vehiculo,
             'tipo_mantenimiento': tipo_mantenimiento,
         }
-        return render(request, 'SGE_vehiculo/mod_mantenimineto.html', context)
+        return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context)
 
     if request.method == 'POST':
         mantenimiento = get_object_or_404(MantenimientoVehiculo, id=id)
@@ -423,8 +423,8 @@ def mod_mantenimineto_vehiculo(request, id, mant):
                     'vehiculo': vehiculo,
                     'tipo_mantenimiento': tipo_mantenimiento,
                 }
-                return render(request, 'SGE_vehiculo/mod_mantenimineto.html', context) 
-                return redirect('nuevo_mantenimineto_vehiculo', id=vehiculo.id, mant=mant)
+                return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context) 
+                return redirect('nuevo_mantenimiento_vehiculo', id=vehiculo.id, mant=mant)
             else:
                 mantenimiento.save()
                 return redirect('mantenimientos_vehiculo', id=vehiculo.id, mant=mant)
@@ -435,7 +435,7 @@ def mod_mantenimineto_vehiculo(request, id, mant):
                 'tipo_mantenimiento': tipo_mantenimiento,
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-            return render(request, 'SGE_vehiculo/mod_mantenimineto.html', context)
+            return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context)
 
     return HttpResponse("Method Not Allowed", status=405)
 

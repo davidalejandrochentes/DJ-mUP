@@ -10,11 +10,11 @@ urlpatterns = [
     path('delete/<int:id>', views.eliminar, name="eliminar_maquina"),
 
     path('mantenimientos_maquina_preventivo/<int:id>', views.mantenimientos_maquina_preventivo, name="mantenimientos_maquina_preventivo"),
-    path('mod_mantenimineto_maquina_preventivo/<int:id>', views.mod_mantenimineto_maquina_preventivo, name="mod_mantenimineto_maquina_preventivo"),
-    path('nuevo_mantenimineto_maquina_preventivo/<int:id>', views.nuevo_mantenimineto_maquina_preventivo, name="nuevo_mantenimineto_maquina_preventivo"),
+    path('mod_mantenimiento_maquina_preventivo/<int:id>', views.mod_mantenimiento_maquina_preventivo, name="mod_mantenimiento_maquina_preventivo"),
+    path('nuevo_mantenimiento_maquina_preventivo/<int:id>', views.nuevo_mantenimiento_maquina_preventivo, name="nuevo_mantenimiento_maquina_preventivo"),
 
     path('mantenimientos_maquina_correctivo/<int:id>', views.mantenimientos_maquina_correctivo, name="mantenimientos_maquina_correctivo"),
-    path('mod_mantenimineto_maquina_correctivo/<int:id>', views.mod_mantenimineto_maquina_correctivo, name="mod_mantenimineto_maquina_correctivo"),
+    path('mod_mantenimiento_maquina_correctivo/<int:id>', views.mod_mantenimiento_maquina_correctivo, name="mod_mantenimiento_maquina_correctivo"),
     path('nuevo_mantenimineto_maquina_correctivo/<int:id>', views.nuevo_mantenimineto_maquina_correctivo, name="nuevo_mantenimineto_maquina_correctivo"),
 
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_maquina"),

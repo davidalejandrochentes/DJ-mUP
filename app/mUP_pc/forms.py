@@ -60,10 +60,20 @@ class MantenimientoPCForm(forms.ModelForm):
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
         
-        if fecha_inicio > date.today():
-            self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
-        
-        if fecha_fin > date.today():
-            self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+        if fecha_inicio:
+            if fecha_inicio > date.today():
+                self.add_error('fecha_inicio', 'La fecha de inicio no puede ser en el futuro.')
+        else:
+            self.add_error('fecha_inicio', 'La fecha de inicio es obligatoria. el formato correcto es "dd/mm/aaaa"')
+
+        if fecha_fin:
+            if fecha_fin > date.today():
+                self.add_error('fecha_fin', 'La fecha de fin no puede ser en el futuro.')
+        else:
+            self.add_error('fecha_fin', 'La fecha de fin es obligatoria. el formato correcto es dd/mm/aaaa')
+
+        if fecha_inicio and fecha_fin:
+            if fecha_inicio > fecha_fin:
+                self.add_error('fecha_inicio', 'La fecha de inicio no puede ser posterior a la fecha de fin.')
         
         return cleaned_data          

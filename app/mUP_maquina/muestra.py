@@ -1,5 +1,5 @@
 @login_required
-def mod_mantenimineto_maquina_correctivo(request, id):
+def mod_mantenimiento_maquina_correctivo(request, id):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
         maquina = mantenimiento.maquina

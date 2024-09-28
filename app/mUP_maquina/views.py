@@ -216,7 +216,7 @@ def mantenimientos_maquina_preventivo(request, id):
 
 
 @login_required
-def mod_mantenimineto_maquina_preventivo(request, id):
+def mod_mantenimiento_maquina_preventivo(request, id):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
         maquina = mantenimiento.maquina
@@ -266,7 +266,7 @@ def mod_mantenimineto_maquina_preventivo(request, id):
 
 
 @login_required
-def nuevo_mantenimineto_maquina_preventivo(request, id):
+def nuevo_mantenimiento_maquina_preventivo(request, id):
     if request.method == 'GET':
         maquina = get_object_or_404(Maquina, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
@@ -333,7 +333,7 @@ def mantenimientos_maquina_correctivo(request, id):
 
 
 @login_required
-def mod_mantenimineto_maquina_correctivo(request, id):
+def mod_mantenimiento_maquina_correctivo(request, id):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
         maquina = mantenimiento.maquina
