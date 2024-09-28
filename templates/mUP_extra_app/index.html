@@ -7,11 +7,51 @@
     <div class="header-index bg-secondary bg-opacity-50 d-flex justify-content-center align-items-center">
         <h1 class="display-1"><strong> <span class="text-light">m</span><span class="text-danger"><b>UP</b></span> </strong></h1>
     </div>
-    <p class="text-center mt-2 mb-0 p-4 p-md-2 fst-italic">Lo que nos diferencia como compañía es que queremos dar soluciones a cualquiera que tenga nuestro producto, sin importar dónde lo compró.</p>
-    <div class="row">
-        <img class="col-12 col-md-4 order-1 mt-4 img-shadow" src="{% static "images/soga.png" %}" alt="Innovaplast" style="max-height: 300px;">
-        <img class="col-12 col-md-4 order-md-2 order-last img-shadow" src="{% static "images/flor.png" %}" alt="Innovaplast" style="max-height: 400px;">
-        <img class="col-12 col-md-4 order-3 mt-4 img-shadow" src="{% static "images/malla.png" %}" alt="Innovaplast" style="max-height: 300px;">
+    
+    <div class="">
+        <canvas id="myBarChart" width="400" height="130"></canvas>
+
+    <script>
+        var ctx = document.getElementById('myBarChart').getContext('2d');
+        var myBarChart = new Chart(ctx, {
+            type: 'bar',  // Tipo de gráfico: 'bar' para gráfico de barras
+            data: {
+                labels: {{ labels|safe }},  // Etiquetas para el eje X
+                datasets: [{
+                    data: {{ data|safe }},  // Valores de la gráfica
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Desactiva la leyenda aquí
+                    }
+                }
+            }
+        });
+    </script>
     </div>
 
 {% endblock %}

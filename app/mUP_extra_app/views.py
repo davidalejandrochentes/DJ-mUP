@@ -4,10 +4,34 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
+from app.mUP_area.models import Area
+from app.mUP_herramienta.models import Herramienta
+from app.mUP_maquina.models import Maquina
+from app.mUP_pc.models import PC
+from app.mUP_repuesto.models import Inventario
+from app.mUP_vehiculo.models import Vehiculo
+
 # Create your views here.
 @login_required
 def index(request):
-    return render(request, 'mUP_extra_app/index.html', {})
+    count_area = Area.objects.count()
+    count_herramienta = Herramienta.objects.count()
+    count_maquina = Maquina.objects.count()
+    count_pc = PC.objects.count()
+    count_inventario = Inventario.objects.count()
+    count_vehiculo = Vehiculo.objects.count()
+    
+    labels = ['Areas', 'Herramientas', 'Máquinas', 'PC', 'Repuesto', 'Vehículo']  # Etiquetas para el eje X
+    data = [count_area, count_herramienta, count_maquina, count_pc, count_inventario, count_vehiculo]  # Datos de la gráfica
+
+    context = {
+        'labels': labels,
+        'data': data
+    }
+    return render(request, 'mUP_extra_app/index.html', context)
+
+
+
 
 def log_in(request):
     if request.method =='GET':
