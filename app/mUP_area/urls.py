@@ -9,17 +9,12 @@ urlpatterns = [
     path('detalles/<int:id>', views.detalles, name="detalles_area"),
     path('delete/<int:id>', views.eliminar, name="eliminar_area"),
 
-    path('mantenimientos_area_preventivo/<int:id>', views.mantenimientos_area_preventivo, name="mantenimientos_area_preventivo"),
-    path('mod_mantenimiento_area_preventivo/<int:id>', views.mod_mantenimiento_area_preventivo, name="mod_mantenimiento_area_preventivo"),
-    path('nuevo_mantenimiento_area_preventivo/<int:id>', views.nuevo_mantenimiento_area_preventivo, name="nuevo_mantenimiento_area_preventivo"),
-    
-    path('mantenimientos_area_correctivo/<int:id>', views.mantenimientos_area_correctivo, name="mantenimientos_area_correctivo"),
-    path('mod_mantenimiento_area_correctivo/<int:id>', views.mod_mantenimiento_area_correctivo, name="mod_mantenimiento_area_correctivo"),
-    path('nuevo_mantenimiento_area_correctivo/<int:id>', views.nuevo_mantenimiento_area_correctivo, name="nuevo_mantenimiento_area_correctivo"),
+    path('mantenimientos_area/<int:id>/<int:mant>', views.mantenimientos_area, name="mantenimientos_area"),
+    path('mod_mantenimiento_area/<int:id>/<int:mant>', views.mod_mantenimiento_area, name="mod_mantenimiento_area"),
+    path('nuevo_mantenimiento_area/<int:id>/<int:mant>', views.nuevo_mantenimiento_area, name="nuevo_mantenimiento_area"),
     
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_area"),
     
     path('documento_general_mantenimientos_area/', views.documento_general_mantenimientos_area, name='documento_general_mantenimientos_area'),
-    path('documento_mantenimientos_preventivos_area/<int:id>/', views.documento_mantenimientos_preventivos_area, name='documento_mantenimientos_preventivos_area'),
-    path('documento_mantenimientos_correctivos_area/<int:id>/', views.documento_mantenimientos_correctivos_area, name='documento_mantenimientos_correctivos_area'),
+    path('documento_mantenimientos_area/<int:id>/<int:mant>', views.documento_mantenimientos_area, name='documento_mantenimientos_area'),
 ]

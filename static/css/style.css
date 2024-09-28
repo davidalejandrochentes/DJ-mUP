@@ -34,6 +34,21 @@ ul {
     list-style-type: none;
 }
 
+.mas:hover{
+    background-color: var(--footer);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tabla:hover{
+    background-color: var(--footer);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.alert:hover{
+    background-color: var(--footer);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .icono-persona{
     color: var(--color-primary);
 }

@@ -135,7 +135,7 @@
     <div class="row mt-3 d-flex justify-content-center align-item-center ps-5 pe-5">
         
         <div class="col-12 col-md-4 p-0 shadow-lg card custom m-3">
-            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_area_preventivo" id=area.id %}">
+            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_area" id=area.id mant=2 %}">
                 <img src="{% static "images/area_preventivo.jpeg" %}" class="card-img-top" alt="..." style="max-height: 200px;">
                 <div class="card-body custom">
                     <h5 class="card-title text-uppercase">Mantenimientos Preventivo</h5>
@@ -145,7 +145,7 @@
         </div>
         
         <div class="col-12 col-md-4 p-0 shadow-lg card custom m-3">
-            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_area_correctivo" id=area.id %}">
+            <a class="text-decoration-none text-dark" href="{% url "mantenimientos_area" id=area.id mant=1 %}">
                 <img src="{% static "images/areas_correctivo.jpg" %}" class="card-img-top" alt="..." style="max-height: 200px;">
                 <div class="card-body custom">
                     <h5 class="card-title text-uppercase">Mantenimientos Correctivo</h5>

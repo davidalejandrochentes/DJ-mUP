@@ -200,36 +200,38 @@ def eliminar_mantenimiento(request, id):
 
 
 @login_required
-def mantenimientos_area_preventivo(request, id):
+def mantenimientos_area(request, id, mant):
     if request.method == 'GET':
         area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         mantenimientos = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
         context = {
             'area': area,
             'tipo_mantenimiento': tipo_mantenimiento,
             'mantenimientos': mantenimientos,
         }
-        return render(request, 'mUP_area/manteniminetos_preventivo.html', context)  
+        return render(request, 'mUP_area/manteniminetos.html', context)  
 
 
 
 
 @login_required
-def mod_mantenimiento_area_preventivo(request, id):
+def mod_mantenimiento_area(request, id, mant):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoArea, id=id)
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         area =mantenimiento.area
         form_mant = MantenimientoAreaForm(instance=mantenimiento)
         context = {
             'form_mant': form_mant,
             'area': area,
+            'tipo_mantenimiento': tipo_mantenimiento,
         }
-        return render(request, 'mUP_area/mod_mantenimineto_preventivo.html', context)
+        return render(request, 'mUP_area/mod_mantenimineto.html', context)
 
     if request.method == 'POST':
         mantenimiento = get_object_or_404(MantenimientoArea, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         area =mantenimiento.area
         form_mant = MantenimientoAreaForm(request.POST, request.FILES, instance=mantenimiento)
 
@@ -238,44 +240,7 @@ def mod_mantenimiento_area_preventivo(request, id):
             mantenimiento.area = area
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
-            return redirect('mantenimientos_area_preventivo', id=area.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'area': area,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/mod_mantenimineto_preventivo.html', context)    
-    
-    return HttpResponse("Method Not Allowed", status=405)            
-
-
-
-
-@login_required
-def nuevo_mantenimiento_area_preventivo(request, id):
-    if request.method == 'GET':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=2) 
-        form_mant = MantenimientoAreaForm()
-        context = {
-            'form_mant': form_mant,
-            'area': area,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_area/nuevo_mantenimineto_preventivo.html', context)
-    
-    if request.method == 'POST':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=2) 
-        form_mant = MantenimientoAreaForm(request.POST, request.FILES)
-
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.area = area
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.save()
-            return redirect('mantenimientos_area_preventivo', id=area.id)
+            return redirect('mantenimientos_area', id=area.id, mant=mant)
         else:
             context = {
                 'form_mant': form_mant,
@@ -283,59 +248,7 @@ def nuevo_mantenimiento_area_preventivo(request, id):
                 'tipo_mantenimiento': tipo_mantenimiento,
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/nuevo_mantenimineto_preventivo.html', context)
-
-    return HttpResponse("Method Not Allowed", status=405)
-
-
-
-@login_required
-def mantenimientos_area_correctivo(request, id):
-    if request.method == 'GET':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=1) 
-        mantenimientos = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'area': area,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_area/manteniminetos_correctivo.html', context)  
-
-
-
-
-@login_required
-def mod_mantenimiento_area_correctivo(request, id):
-    if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoArea, id=id)
-        area =mantenimiento.area
-        form_mant = MantenimientoAreaForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'area': area,
-        }
-        return render(request, 'mUP_area/mod_mantenimineto_correctivo.html', context)
-
-    if request.method == 'POST':
-            mantenimiento = get_object_or_404(MantenimientoArea, id=id)
-            tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=1) 
-            area =mantenimiento.area
-            form_mant = MantenimientoAreaForm(request.POST, request.FILES, instance=mantenimiento)
-
-            if form_mant.is_valid():
-                mantenimiento = form_mant.save(commit=False)
-                mantenimiento.area = area
-                mantenimiento.tipo = tipo_mantenimiento
-                mantenimiento.save()
-                return redirect('mantenimientos_area_correctivo', id=area.id)
-            else:
-                context = {
-                    'form_mant': form_mant,
-                    'area': area,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'mUP_area/mod_mantenimineto_correctivo.html', context)    
+            return render(request, 'mUP_area/mod_mantenimineto.html', context)    
     
     return HttpResponse("Method Not Allowed", status=405)            
 
@@ -343,21 +256,21 @@ def mod_mantenimiento_area_correctivo(request, id):
 
 
 @login_required
-def nuevo_mantenimiento_area_correctivo(request, id):
+def nuevo_mantenimiento_area(request, id, mant):
     if request.method == 'GET':
         area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=1) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         form_mant = MantenimientoAreaForm()
         context = {
             'form_mant': form_mant,
             'area': area,
             'tipo_mantenimiento': tipo_mantenimiento,
         }
-        return render(request, 'mUP_area/nuevo_mantenimineto_correctivo.html', context)
+        return render(request, 'mUP_area/nuevo_mantenimineto.html', context)
     
     if request.method == 'POST':
         area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=1) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         form_mant = MantenimientoAreaForm(request.POST, request.FILES)
 
         if form_mant.is_valid():
@@ -365,7 +278,7 @@ def nuevo_mantenimiento_area_correctivo(request, id):
             mantenimiento.area = area
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
-            return redirect('mantenimientos_area_correctivo', id=area.id)
+            return redirect('mantenimientos_area', id=area.id, mant=mant)
         else:
             context = {
                 'form_mant': form_mant,
@@ -373,7 +286,7 @@ def nuevo_mantenimiento_area_correctivo(request, id):
                 'tipo_mantenimiento': tipo_mantenimiento,
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/nuevo_mantenimineto_correctivo.html', context)
+            return render(request, 'mUP_area/nuevo_mantenimineto.html', context)
 
     return HttpResponse("Method Not Allowed", status=405)
 
@@ -444,10 +357,11 @@ def documento_general_mantenimientos_area(request):
 
 
 @login_required
-def documento_mantenimientos_preventivos_area(request, id):
+def documento_mantenimientos_area(request, id, mant):
     mes = request.GET.get('mes')
     anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 2
+    tipo_mantenimiento_id = mant
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
 
     area = get_object_or_404(Area, pk=id)
     mantenimientos = MantenimientoArea.objects.filter(area=area).order_by('-fecha_fin', '-hora_fin')
@@ -462,73 +376,9 @@ def documento_mantenimientos_preventivos_area(request, id):
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}_{}.xlsx"'.format(area.nombre, mes, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, area.nombre, mes, anio)
     else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}.xlsx"'.format(area.nombre, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Operador', 'Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.operador,
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response
-
-
-
-
-@login_required
-def documento_mantenimientos_correctivos_area(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 1
-
-    area = get_object_or_404(Area, pk=id)
-    mantenimientos = MantenimientoArea.objects.filter(area=area).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivos_de_{}_{}_{}.xlsx"'.format(area.nombre, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivos_de_{}_{}.xlsx"'.format(area.nombre, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, area.nombre, anio)
 
     wb = openpyxl.Workbook()
     ws = wb.active
