@@ -9,17 +9,12 @@ urlpatterns = [
     path('detalles/<int:id>', views.detalles, name="detalles_pc"),
     path('delete/<int:id>', views.eliminar, name="eliminar_pc"),
 
-    path('mantenimientos_pc_preventivos/<int:id>', views.mantenimientos_pc_preventivos, name="mantenimientos_pc_preventivos"),
-    path('mod_mantenimiento_pc_preventivo/<int:id>', views.mod_mantenimiento_pc_preventivo, name="mod_mantenimiento_pc_preventivo"),
-    path('nuevo_mantenimiento_pc_preventivo/<int:id>', views.nuevo_mantenimiento_pc_preventivo, name="nuevo_mantenimiento_pc_preventivo"),
-
-    path('mantenimientos_pc_correctivos/<int:id>', views.mantenimientos_pc_correctivos, name="mantenimientos_pc_correctivos"),
-    path('mod_mantenimiento_pc_correctivo/<int:id>', views.mod_mantenimiento_pc_correctivo, name="mod_mantenimiento_pc_correctivo"),
-    path('nuevo_mantenimiento_pc_correctivo/<int:id>', views.nuevo_mantenimiento_pc_correctivo, name="nuevo_mantenimiento_pc_correctivo"),
+    path('mantenimientos_pc/<int:id>/<int:mant>', views.mantenimientos_pc, name="mantenimientos_pc"),
+    path('mod_mantenimiento_pc/<int:id>/<int:mant>', views.mod_mantenimiento_pc, name="mod_mantenimiento_pc"),
+    path('nuevo_mantenimiento_pc/<int:id>/<int:mant>', views.nuevo_mantenimiento_pc, name="nuevo_mantenimiento_pc"),
 
     path('delete_mantenimiento/<int:id>', views.eliminar_mantenimiento, name="eliminar_mantenimiento_pc"),
     
     path('documento_general_mantenimientos_pc/', views.documento_general_mantenimientos_pc, name='documento_general_mantenimientos_pc'),
-    path('documento_mantenimientos_preventivos_pc/<int:id>/', views.documento_mantenimientos_preventivos_pc, name='documento_mantenimientos_preventivos_pc'),
-    path('documento_mantenimientos_correctivos_pc/<int:id>/', views.documento_mantenimientos_correctivos_pc, name='documento_mantenimientos_correctivos_pc'),
+    path('documento_mantenimientos_pc/<int:id>/<int:mant>', views.documento_mantenimientos_pc, name='documento_mantenimientos_pc'),
 ]

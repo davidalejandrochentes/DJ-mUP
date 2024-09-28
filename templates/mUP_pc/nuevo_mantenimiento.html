@@ -11,12 +11,12 @@
 
 <div class="container mb-5">
     <div class="d-flex p-2 justify-content-between">
-        <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc_correctivos" id=pc.id %}">
+        <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc" id=pc.id mant=tipo_mantenimiento.id %}">
             <i class="bi bi-arrow-left fs-1"></i>
         </a>
     </div>
     
-    <h2 class="text-center">Nuevo mantenimiento {{ tipo_mantenimiento }} para {{ area }}</h2>
+    <h2 class="text-center">Nuevo mantenimiento {{ tipo_mantenimiento }} para {{ pc }}</h2>
     <div class="d-flex justify-content-center align-items-center">
 
         <form class="p-5 rounded-3 bg-body-tertiary shadow-lg" action="" method='POST' enctype="multipart/form-data">

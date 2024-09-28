@@ -1,6 +1,6 @@
 {% extends "layout/base.html" %}
 
-{% block 'title'%} Mantenimientos Correctivos {% endblock %}
+{% block 'title'%} Mantenimientos Preventivo {% endblock %}
 
 
 {% block 'content' %}
@@ -22,7 +22,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form class="" action="{% url 'documento_mantenimientos_correctivos_pc' id=pc.id %}" method="get">
+                        <form class="" action="{% url 'documento_mantenimientos_pc' id=pc.id mant=tipo_mantenimiento.id %}" method="get">
                             <label class="" for="mes">Mes:</label>
                             <select class="form-select form-select-sm" name="mes" id="mes">
                                 <option value="">Todos los meses</option>
@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <a class="btn custom mantenimineto shadow rounded-pill" href="{% url "nuevo_mantenimiento_pc_correctivo" id=pc.id %}">Mantenimiento <i class="bi bi-tools"></i></a>
+            <a class="btn custom mantenimineto shadow rounded-pill" href="{% url "nuevo_mantenimiento_pc" id=pc.id mant=tipo_mantenimiento.id %}">Mantenimiento <i class="bi bi-tools"></i></a>
         </span>
     </div>
 
@@ -112,7 +112,7 @@
                         </div>
                     </td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="{% url "mod_mantenimiento_pc_correctivo" id=mantenimiento.id %}"><i class="bi bi-pencil-square"></i></a>
+                        <a class="btn btn-info btn-sm" href="{% url "mod_mantenimiento_pc" id=mantenimiento.id mant=tipo_mantenimiento.id %}"><i class="bi bi-pencil-square"></i></a>
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal-eliminar{{ mantenimiento.id }}">

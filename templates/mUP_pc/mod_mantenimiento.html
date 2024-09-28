@@ -1,22 +1,23 @@
 {% extends "layout/base.html" %}
 
-{% block 'title'%} Nuevo Mantenimiento{% endblock %}
+{% block 'title'%} Modificar Mantenimiento{% endblock %}
 
 {% block 'styles' %}
 {% load static %}
 <link rel="stylesheet" href="{% static "css/forms.css" %}">
 {% endblock 'styles' %}
 
+
 {% block 'content' %}
 
 <div class="container mb-5">
     <div class="d-flex p-2 justify-content-between">
-        <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc_preventivos" id=pc.id %}">
+        <a class="text-decoration-none text-dark" href="{% url "mantenimientos_pc" id=pc.id mant=tipo_mantenimiento.id %}">
             <i class="bi bi-arrow-left fs-1"></i>
         </a>
     </div>
     
-    <h2 class="text-center">Nuevo mantenimiento {{ tipo_mantenimiento }} para {{ pc }}</h2>
+    <h2 class="text-center">Modificar Mantenimiento de {{ pc }}</h2>
     <div class="d-flex justify-content-center align-items-center">
 
         <form class="p-5 rounded-3 bg-body-tertiary shadow-lg" action="" method='POST' enctype="multipart/form-data">

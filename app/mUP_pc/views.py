@@ -198,36 +198,38 @@ def eliminar_mantenimiento(request, id):
 
 
 @login_required
-def mantenimientos_pc_preventivos(request, id):
+def mantenimientos_pc(request, id, mant):
     if request.method == 'GET':
         pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
         mantenimientos = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
         context = {
             'pc': pc,
             'tipo_mantenimiento': tipo_mantenimiento,
             'mantenimientos': mantenimientos,
         }
-        return render(request, 'mUP_pc/mantenimientos_preventivo.html', context) 
+        return render(request, 'mUP_pc/mantenimientos_pc.html', context) 
 
 
 
 
 @login_required
-def mod_mantenimiento_pc_preventivo(request, id):
+def mod_mantenimiento_pc(request, id, mant):
     if request.method == 'GET':
         mantenimiento = get_object_or_404(MantenimientoPC, id=id)
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
         pc = mantenimiento.pc
         form_mant = MantenimientoPCForm(instance=mantenimiento)
         context = {
             'form_mant': form_mant,
             'pc': pc,
+            'tipo_mantenimiento': tipo_mantenimiento
         }
-        return render(request, 'mUP_pc/mod_mantenimiento_preventivo.html', context) 
+        return render(request, 'mUP_pc/mod_mantenimiento.html', context) 
 
     if request.method == 'POST':
         mantenimiento = get_object_or_404(MantenimientoPC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
         pc = mantenimiento.pc 
         form_mant = MantenimientoPCForm(request.POST, request.FILES, instance=mantenimiento)
 
@@ -236,14 +238,15 @@ def mod_mantenimiento_pc_preventivo(request, id):
             mantenimiento.pc = pc
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
-            return redirect('mantenimientos_pc_preventivos', id=pc.id)
+            return redirect('mantenimientos_pc', id=pc.id, mant=mant)
         else:
             context = {
             'form_mant': form_mant,
             'pc': pc,
+            'tipo_mantenimiento': tipo_mantenimiento
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/mod_mantenimiento_preventivo.html', context)                  
+            return render(request, 'mUP_pc/mod_mantenimiento.html', context)                  
 
     return HttpResponse("Method Not Allowed", status=405) 
 
@@ -251,21 +254,21 @@ def mod_mantenimiento_pc_preventivo(request, id):
 
 
 @login_required
-def nuevo_mantenimiento_pc_preventivo(request, id):
+def nuevo_mantenimiento_pc(request, id, mant):
     if request.method == 'GET':
         pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
         form_mant = MantenimientoPCForm()
         context = {
             'form_mant': form_mant,
             'pc': pc,
             'tipo_mantenimiento': tipo_mantenimiento,
         }
-        return render(request, 'mUP_pc/nuevo_mantenimiento_preventivo.html', context)
+        return render(request, 'mUP_pc/nuevo_mantenimiento.html', context)
     
     if request.method == 'POST':
         pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=2) 
+        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
         form_mant = MantenimientoPCForm(request.POST, request.FILES)
 
         if form_mant.is_valid():
@@ -273,7 +276,7 @@ def nuevo_mantenimiento_pc_preventivo(request, id):
             mantenimiento.pc = pc
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
-            return redirect('mantenimientos_pc_preventivos', id=pc.id)
+            return redirect('mantenimientos_pc', id=pc.id, mant=mant)
         else:
             context = {
                 'form_mant': form_mant,
@@ -281,100 +284,10 @@ def nuevo_mantenimiento_pc_preventivo(request, id):
                 'tipo_mantenimiento': tipo_mantenimiento,
             }
             messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/nuevo_mantenimiento_preventivo.html', context)
+            return render(request, 'mUP_pc/nuevo_mantenimiento.html', context)
 
     return HttpResponse("Method Not Allowed", status=405)
 
-
-
-
-@login_required
-def mantenimientos_pc_correctivos(request, id):
-    if request.method == 'GET':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=1) 
-        mantenimientos = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_pc/mantenimientos_correctivo.html', context) 
-
-
-
-
-@login_required
-def mod_mantenimiento_pc_correctivo(request, id):
-    if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoPC, id=id)
-        pc = mantenimiento.pc
-        form_mant = MantenimientoPCForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'pc': pc,
-        }
-        return render(request, 'mUP_pc/mod_mantenimiento_correctivo.html', context) 
-
-    if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoPC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=1) 
-        pc = mantenimiento.pc 
-        form_mant = MantenimientoPCForm(request.POST, request.FILES, instance=mantenimiento)
-
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.pc = pc
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.save()
-            return redirect('mantenimientos_pc_correctivos', id=pc.id)
-        else:
-            context = {
-            'form_mant': form_mant,
-            'pc': pc,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/mod_mantenimiento_correctivo.html', context)                  
-
-    return HttpResponse("Method Not Allowed", status=405) 
-
-
-
-
-@login_required
-def nuevo_mantenimiento_pc_correctivo(request, id):
-    if request.method == 'GET':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=1) 
-        form_mant = MantenimientoPCForm()
-        context = {
-            'form_mant': form_mant,
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_pc/nuevo_mantenimiento_correctivo.html', context)
-    
-    if request.method == 'POST':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=1) 
-        form_mant = MantenimientoPCForm(request.POST, request.FILES)
-
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.pc = pc
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.save()
-            return redirect('mantenimientos_pc_correctivos', id=pc.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'pc': pc,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/nuevo_mantenimiento_correctivo.html', context)
-
-    return HttpResponse("Method Not Allowed", status=405)    
 
 
 
@@ -444,10 +357,11 @@ def documento_general_mantenimientos_pc(request):
 
 
 @login_required
-def documento_mantenimientos_preventivos_pc(request, id):
+def documento_mantenimientos_pc(request, id, mant):
     mes = request.GET.get('mes')
     anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 2
+    tipo_mantenimiento_id = mant
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
 
     pc = get_object_or_404(PC, pk=id)
     mantenimientos = MantenimientoPC.objects.filter(pc=pc).order_by('-fecha_fin', '-hora_fin')
@@ -462,9 +376,9 @@ def documento_mantenimientos_preventivos_pc(request, id):
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}_{}.xlsx"'.format(pc.nombre, mes, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, pc.nombre, mes, anio)
     else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_preventivos_de_{}_{}.xlsx"'.format(pc.nombre, anio)
+        response['Content-Disposition'] = 'attachment; filename="mantenimientos_{}_de_{}_{}.xlsx"'.format(tipo_mantenimiento.tipo, pc.nombre, anio)
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -503,69 +417,4 @@ def documento_mantenimientos_preventivos_pc(request, id):
         ws.column_dimensions[column].width = adjusted_width
 
     wb.save(response)
-    return response    
-
-
-
-
-@login_required
-def documento_mantenimientos_correctivos_pc(request, id):
-    mes = request.GET.get('mes')
-    anio = request.GET.get('anio')
-    tipo_mantenimiento_id = 1
-
-    pc = get_object_or_404(PC, pk=id)
-    mantenimientos = MantenimientoPC.objects.filter(pc=pc).order_by('-fecha_fin', '-hora_fin')
-
-    if mes:
-        mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-    if anio:
-        mantenimientos = mantenimientos.filter(fecha_fin__year=anio)
-    if tipo_mantenimiento_id: # Si se seleccionó un tipo de mantenimiento
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, pk=tipo_mantenimiento_id)
-        mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
-
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    if mes:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivo_de_{}_{}_{}.xlsx"'.format(pc.nombre, mes, anio)
-    else:
-        response['Content-Disposition'] = 'attachment; filename="mantenimientos_correctivo_de_{}_{}.xlsx"'.format(pc.nombre, anio)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    # Define los encabezados de la tabla
-    headers = ['Fecha I', 'Hora I', 'Fecha F', 'Hora F', 'Operador', 'Partes y Piezas', 'Descripción']
-    for col, header in enumerate(headers, start=1):
-        ws.cell(row=1, column=col, value=header)
-        ws.cell(row=1, column=col).font = Font(bold=True)
-        ws.cell(row=1, column=col).fill = PatternFill(start_color="BFBFBF", end_color="BFBFBF", fill_type="solid")
-
-    # Agrega los datos de los mantenimientos
-    row = 2
-    for mantenimiento in mantenimientos:
-        ws.append([
-            mantenimiento.fecha_inicio,
-            mantenimiento.hora_inicio,
-            mantenimiento.fecha_fin,
-            mantenimiento.hora_fin,
-            mantenimiento.operador,
-            mantenimiento.partes_y_piezas,
-            mantenimiento.descripción
-        ])
-
-    # Ajusta el ancho de las columnas automáticamente
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
-        adjusted_width = (max_length + 2) * 1.2
-        ws.column_dimensions[column].width = adjusted_width
-
-    wb.save(response)
-    return response   
+    return response
