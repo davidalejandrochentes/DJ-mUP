@@ -54,7 +54,7 @@
     <div class="row mt-3 d-flex justify-content-center align-item-center ps-5 pe-5">
         {% for alerta in alertas %}
         <div class="col-12 col-md-4 p-0 card text-bg-danger carta-home m-3 shadow-lg">
-            <a class="text-decoration-none text-light" href="{% url "mantenimientos_pc_correctivos" id=alerta.pc.id %}">
+            <a class="text-decoration-none text-light" href="{% url "mantenimientos_pc" id=alerta.pc.id mant=1 %}">
                 <img src="{{ alerta.pc.imagen.url }}" class="card-img-top" alt="..." style="max-height: 200px;">
                 <div class="card-body">
                     <h5 class="card-title">{{ alerta.pc.nombre }}</h5>
