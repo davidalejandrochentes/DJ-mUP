@@ -22,8 +22,8 @@ def index(request):
     count_vehiculo = Vehiculo.objects.count()
     
     labels = ['Areas', 'Herramientas', 'Máquinas', 'PC', 'Repuesto', 'Vehículo']  # Etiquetas para el eje X
-    data = [10, 35, 9, 24, 20, 5]  # Etiquetas para el eje X
-    #data = [count_area, count_herramienta, count_maquina, count_pc, count_inventario, count_vehiculo]  # Datos de la gráfica
+    #data = [10, 35, 9, 24, 20, 5]  # Etiquetas para el eje X
+    data = [count_area, count_herramienta, count_maquina, count_pc, count_inventario, count_vehiculo]  # Datos de la gráfica
 
     context = {
         'labels': labels,
