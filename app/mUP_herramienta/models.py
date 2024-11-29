@@ -21,6 +21,11 @@ class Herramienta(models.Model):
     intervalo_mantenimiento = models.IntegerField(blank=True, null=True, default=0)
     image = models.ImageField(upload_to="herramienta/image", null=False, blank=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre']),
+        ]
+
     def dias_restantes_mantenimiento(self):
         dias_pasados = (date.today() - self.fecha_ultimo_mantenimiento).days
         dias_restantes = self.intervalo_mantenimiento - dias_pasados
@@ -32,6 +37,11 @@ class Herramienta(models.Model):
 class TipoMantenimientoHerramienta(models.Model):
     tipo = models.CharField(max_length=100, blank=False, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['tipo']),
+        ]
+
     def __str__(self):
         return self.tipo
 
@@ -40,6 +50,11 @@ class MantenimientoHerramienta(models.Model):
     tipo = models.ForeignKey(TipoMantenimientoHerramienta, on_delete=models.CASCADE)
     fecha = models.DateField(default=date.today)
     hora = models.TimeField(default=datetime.now().time())   
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['herramienta']),
+        ]
 
     def __str__(self):
         txt = "Herramienta: {}, Tipo: {}, Fecha: {}"

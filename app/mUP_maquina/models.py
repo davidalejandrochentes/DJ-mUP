@@ -26,6 +26,11 @@ class Maquina(models.Model):
     fecha_ultimo_mantenimiento = models.DateField(default=date.today, blank=False, null=False)
     imagen = models.ImageField(upload_to="maquina/imagen", null=False, blank=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre']),
+        ]
+
     def horas_restantes_mantenimiento(self):
         ultimo_mantenimiento = MantenimientoMaquina.objects.filter(maquina=self, tipo__id=1).order_by('-fecha_fin').first()
         if ultimo_mantenimiento:
@@ -47,6 +52,11 @@ class Maquina(models.Model):
 class TipoMantenimientoMaquina(models.Model):
     tipo = models.CharField(max_length=100, blank=False, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['tipo']),
+        ]
+
     def __str__(self):
         return self.tipo
 
@@ -54,6 +64,11 @@ class TipoMantenimientoMaquina(models.Model):
 
 class HorasParaAlerta(models.Model):
     horas = models.IntegerField(blank=False, null=False, default=30)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['horas']),
+        ]
 
     def __str__(self):
         txt = "horas para la alerta: {}"
@@ -74,6 +89,11 @@ class MantenimientoMaquina(models.Model):
     partes_y_piezas = models.TextField(max_length=500, null=False, blank=False, default="")
     descripción = models.TextField(max_length=500, null=False, blank=False, default="")
     imagen = models.ImageField(upload_to="maquina/mantenimiento/imagen", null=False, blank=False, default=None)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['maquina']),
+        ]
 
 
     def __str__(self):

@@ -22,6 +22,11 @@ class Area(models.Model):
     intervalo_mantenimiento = models.IntegerField(blank=False, null=False)
     imagen = models.ImageField(upload_to="area/imagen", null=False, blank=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre']),
+        ]
+
     def dias_restantes_mantenimiento(self):
         dias_pasados = (date.today() - self.fecha_ultimo_mantenimiento).days
         dias_restantes = self.intervalo_mantenimiento - dias_pasados
@@ -36,6 +41,11 @@ class Area(models.Model):
 class TipoMantenimientoArea(models.Model):
     tipo = models.CharField(max_length=100, blank=False, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['tipo']),
+        ]
+
     def __str__(self):
         return self.tipo
 
@@ -44,6 +54,11 @@ class TipoMantenimientoArea(models.Model):
 
 class DiasParaAlerta(models.Model):
     días = models.IntegerField(blank=False, null=False, default=7)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['días']),
+        ]
 
     def __str__(self):
         txt = "Días para la alerta: {}"
@@ -61,7 +76,12 @@ class MantenimientoArea(models.Model):
     operador = models.CharField(max_length=100, blank=False, null=False, default="")
     descripción = models.TextField(max_length=500, null=False, blank=False, default="")
     imagen_antes = models.ImageField(upload_to="area/mantenimiento/antes", null=False, blank=False, default=None) 
-    imagen_después = models.ImageField(upload_to="area/mantenimiento/después", null=False, blank=False, default=None) 
+    imagen_después = models.ImageField(upload_to="area/mantenimiento/después", null=False, blank=False, default=None)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['area']),
+        ]
 
     def __str__(self):
         txt = "Area: {}, Tipo: {}, Fecha: {}"

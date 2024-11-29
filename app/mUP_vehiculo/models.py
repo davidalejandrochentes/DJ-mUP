@@ -30,6 +30,11 @@ class Vehiculo(models.Model):
     dirección_chofer = models.CharField(max_length=30, blank=False, null=False)
     dni_chofer = models.BigIntegerField(max_length=20, blank=True, null=True, default=0)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['marca']),
+        ]
+
     
     def obtener_km_restantes(self, tipo_mantenimiento_id, intervalo):
         ultimo_mantenimiento = MantenimientoVehiculo.objects.filter(vehiculo=self, tipo__id=tipo_mantenimiento_id).order_by('-fecha_fin').first()
@@ -62,6 +67,11 @@ class Vehiculo(models.Model):
 class TipoMantenimientoVehiculo(models.Model):
     tipo = models.CharField(max_length=100, blank=False, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['tipo']),
+        ]
+
     def __str__(self):
         return self.tipo  
 
@@ -70,6 +80,11 @@ class TipoMantenimientoVehiculo(models.Model):
 
 class KmParaAlerta(models.Model):
     km = models.IntegerField(blank=False, null=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['km']),
+        ]
 
     def __str__(self):
         txt = "Km para la alerta: {}"
@@ -90,6 +105,11 @@ class MantenimientoVehiculo(models.Model):
     descripción = models.TextField(max_length=400, null=False, blank=False)
     partes_y_piezas = models.TextField(max_length=400, null=False, blank=False)
     imagen = models.ImageField(upload_to="vehiculo/mantenimiento/imagen", null=False, blank=False, default=None)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['vehiculo']),
+        ]
 
     def __str__(self):
         txt = "Vehiculo: {}, Tipo: {}, Fecha: {}"

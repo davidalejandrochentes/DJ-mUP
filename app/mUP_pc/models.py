@@ -26,6 +26,11 @@ class PC(models.Model):
     intervalo_mantenimiento = models.IntegerField(blank=False, null=False)
     imagen = models.ImageField(upload_to="pc/imagen", null=False, blank=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['nombre']),
+        ]
+
     def dias_restantes_mantenimiento(self):
         dias_pasados = (date.today() - self.fecha_ultimo_mantenimiento).days
         dias_restantes = self.intervalo_mantenimiento - dias_pasados
@@ -40,12 +45,22 @@ class PC(models.Model):
 class TipoMantenimientoPC(models.Model):
     tipo = models.CharField(max_length=100, blank=False, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['tipo']),
+        ]
+
     def __str__(self):
         return self.tipo
 
 
 class DiasParaAlerta(models.Model):
     días = models.IntegerField(blank=False, null=False, default=7)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['días']),
+        ]
 
     def __str__(self):
         txt = "Días para la alerta: {}"
@@ -64,7 +79,12 @@ class MantenimientoPC(models.Model):
     operador = models.CharField(max_length=100, blank=False, null=False, default="")
     partes_y_piezas = models.TextField(max_length=500, null=False, blank=False, default="")
     descripción = models.TextField(max_length=500, null=False, blank=False, default="")
-    imagen = models.ImageField(upload_to="pc/mantenimiento/imagen", null=False, blank=False, default=None)   
+    imagen = models.ImageField(upload_to="pc/mantenimiento/imagen", null=False, blank=False, default=None)  
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['pc']),
+        ] 
 
     def __str__(self):
         txt = "Equipo: {}, Tipo: {}, Fecha: {}"
