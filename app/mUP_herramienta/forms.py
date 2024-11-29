@@ -10,7 +10,6 @@ class HerramientaForm(forms.ModelForm):
         exclude = ['fecha_ultimo_mantenimiento', 'intervalo_mantenimiento']
         labels = {
             'image': 'Imagen',
-            'intervalo_mantenimiento': 'intervalo mantenimiento correctivo'  # Aquí especificamos la etiqueta con tilde
         }
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control m-2', 'placeholder': 'Nombre de la herramienta'}),
@@ -23,7 +22,6 @@ class HerramientaForm(forms.ModelForm):
             'proveedor': forms.TextInput(attrs={'class': 'form-control m-2', 'placeholder': 'Eje: "Makita'}),
             'ubicación': forms.TextInput(attrs={'class': 'form-control m-2', 'placeholder': 'Eje: taller'}),
             'estado_de_la_herramienta': forms.TextInput(attrs={'class': 'form-control m-2', 'placeholder': 'Eje: "bueno"'}),
-            'intervalo_mantenimiento': forms.NumberInput(attrs={'class': 'form-control m-2', 'type': 'number', 'placeholder': 'Número determinado de "Días"'}),
         }
 
 class MantenimientoHerramientaForm(forms.ModelForm):

@@ -18,7 +18,7 @@ class Herramienta(models.Model):
     ubicación = models.CharField(max_length=100, null=False, blank=False)
     estado_de_la_herramienta = models.CharField(max_length=100, null=False, blank=False)
     fecha_ultimo_mantenimiento = models.DateField(default=date.today, blank=False, null=False)
-    intervalo_mantenimiento = models.IntegerField(blank=True, null=True, default=0)
+    intervalo_mantenimiento = models.IntegerField(blank=True, null=True, default=7)
     image = models.ImageField(upload_to="herramienta/image", null=False, blank=False)
 
     class Meta:

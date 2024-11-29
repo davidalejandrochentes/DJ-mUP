@@ -3,7 +3,6 @@ from .models import Herramienta, MantenimientoHerramienta, TipoMantenimientoHerr
 from .forms import HerramientaForm, MantenimientoHerramientaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 
 import openpyxl
@@ -12,47 +11,35 @@ from openpyxl.styles import Font, PatternFill
 # Create your views here.
 @login_required
 def herramienta(request):
-    alert = Herramienta.objects.all()
-    herramientas = Herramienta.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    total_herramientas = len(herramientas)
-    alertas = []
-    for herramienta in alert:
-        dias_restantes = herramienta.dias_restantes_mantenimiento()
-        if dias_restantes <= 7:
-            
-            alertas.append({
-                'herramienta': herramienta,
-                'dias_restantes': dias_restantes
-            })
+    search_term = request.GET.get('search', '')
+    herramientas = Herramienta.objects.filter(nombre__icontains=search_term)
+    alertas = [
+        {'herramienta': h, 'dias_restantes': h.dias_restantes_mantenimiento()}
+        for h in Herramienta.objects.all() if h.dias_restantes_mantenimiento() <= 7
+    ]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
     context = {
         'herramientas': herramientas,
-        'total_herramientas': total_herramientas,
+        'total_herramientas': len(herramientas),
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'total_alertas': len(alertas_ordenadas),
     }
-    return render(request, 'mUP_herramienta/herramienta.html', context)    
+    return render(request, 'mUP_herramienta/herramienta.html', context)
 
 @login_required
 def alertas(request):
-    alert = Herramienta.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    alertas = []
-    for herramienta in alert:
-        dias_restantes = herramienta.dias_restantes_mantenimiento()
-        if dias_restantes <= 7:
-            
-            alertas.append({
-                'herramienta': herramienta,
-                'dias_restantes': dias_restantes
-            })
+    search_term = request.GET.get('search', '')
+    alertas = [
+        {'herramienta': h, 'dias_restantes': h.dias_restantes_mantenimiento()}
+        for h in Herramienta.objects.filter(nombre__icontains=search_term)
+        if h.dias_restantes_mantenimiento() <= 7
+    ]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
     context = {
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'total_alertas': len(alertas_ordenadas),
     }
-    return render(request, 'mUP_herramienta/alertas.html', context)    
+    return render(request, 'mUP_herramienta/alertas.html', context)
 
 @login_required
 def tabla_mantenimientos(request):
@@ -69,23 +56,14 @@ def tabla_mantenimientos(request):
 
 @login_required
 def crear_herramienta(request):
-    if request.method == 'GET':
-        form = HerramientaForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_herramienta/nueva.html', context)
+    form = HerramientaForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('herramienta')
     if request.method == 'POST':
-        form = HerramientaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
-        if form.is_valid():
-            form.save()
-            return redirect('herramienta')
-        else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_herramienta/nueva.html', context)             
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+    context = {'form': form}
+    return render(request, 'mUP_herramienta/nueva.html', context)           
 
 @login_required
 def eliminar(request, id):
@@ -100,81 +78,38 @@ def eliminar_mantenimiento(request, id):
     previous_url = request.META.get('HTTP_REFERER')
     return HttpResponseRedirect(previous_url)    
 
-@login_required    
-def detalles(request, id):
-    if request.method == 'GET':
-        herramienta = get_object_or_404(Herramienta, id=id)
-        mantenimientos = herramienta.mantenimientoherramienta_set.all().order_by('-fecha', '-hora')
-        form = HerramientaForm(instance=herramienta)
-        form_mant = MantenimientoHerramientaForm()
-        tipos_mantenimiento = TipoMantenimientoHerramienta.objects.all()
-        context = {
-            'herramienta': herramienta,
-            'form': form,
-            'id': id,
-            'form_mant': form_mant,
-            'mantenimientos': mantenimientos,
-            'tipos_mantenimiento': tipos_mantenimiento,
-            }
-        return render(request, 'mUP_herramienta/detalles.html', context)
-    
-    if request.method == 'POST':
-        herramienta = get_object_or_404(Herramienta, id = id)
-        form_mant = MantenimientoHerramientaForm(request.POST)
-        form = HerramientaForm(instance= herramienta)
-        form = HerramientaForm(request.POST, request.FILES, instance= herramienta)
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+from .forms import HerramientaForm, MantenimientoHerramientaForm
+from .models import Herramienta, TipoMantenimientoHerramienta
 
+@login_required
+def detalles(request, id):
+    herramienta = get_object_or_404(Herramienta, id=id)
+    mantenimientos = herramienta.mantenimientoherramienta_set.all().order_by('-fecha', '-hora')
+    tipos_mantenimiento = TipoMantenimientoHerramienta.objects.all()
+    form = HerramientaForm(request.POST or None, request.FILES or None, instance=herramienta)
+    form_mant = MantenimientoHerramientaForm(request.POST or None)
+    if request.method == 'POST':
         if form.is_valid():
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            if intervalo_mantenimiento < 0:
-                form_mant = MantenimientoHerramientaForm()
-                tipos_mantenimiento = TipoMantenimientoHerramienta.objects.all()
-                mantenimientos = herramienta.mantenimientoherramienta_set.all().order_by('-fecha', '-hora')
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'herramienta': herramienta,
-                    'form': form,
-                    'id': id,
-                    'form_mant': form_mant,
-                    'mantenimientos': mantenimientos,
-                    'tipos_mantenimiento': tipos_mantenimiento,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            else:
-                form.save()
-                form_mant = MantenimientoHerramientaForm()
-                tipos_mantenimiento = TipoMantenimientoHerramienta.objects.all()
-                mantenimientos = herramienta.mantenimientoherramienta_set.all().order_by('-fecha', '-hora')
-                context = {
-                    'herramienta': herramienta,
-                    'form': form,
-                    'id': id,
-                    'form_mant': form_mant,
-                    'mantenimientos': mantenimientos,
-                    'tipos_mantenimiento': tipos_mantenimiento,
-                }
-                return render(request, 'mUP_herramienta/detalles.html', context) 
-        
+            form.save()
+            return redirect('detalles_herramienta', id=id)
         if form_mant.is_valid():
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.herramienta = herramienta
             mantenimiento.save()
-            form = HerramientaForm(instance= herramienta)
-            tipos_mantenimiento = TipoMantenimientoHerramienta.objects.all()
-            mantenimientos = herramienta.mantenimientoherramienta_set.all().order_by('-fecha', '-hora')
-            context = {
-            'herramienta': herramienta,
-            'form': form,
-            'id': id,
-            'form_mant': form_mant,
-            'mantenimientos': mantenimientos,
-            'tipos_mantenimiento': tipos_mantenimiento,
-            }
-            return render(request, 'mUP_herramienta/detalles.html', context)  
-        else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url)            
+            return redirect('detalles_herramienta', id=id)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    context = {
+        'herramienta': herramienta,
+        'form': form,
+        'id': id,
+        'form_mant': form_mant,
+        'mantenimientos': mantenimientos,
+        'tipos_mantenimiento': tipos_mantenimiento,
+    }
+    return render(request, 'mUP_herramienta/detalles.html', context)
 
 
 
