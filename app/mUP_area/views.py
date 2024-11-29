@@ -3,7 +3,6 @@ from .models import Area, MantenimientoArea, TipoMantenimientoArea, DiasParaAler
 from .forms import AreaForm, MantenimientoAreaForm, DiasParaAlertaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 
 import openpyxl
@@ -16,167 +15,85 @@ from openpyxl.styles import Font, PatternFill
 @login_required
 def area(request):
     dias_alerta = DiasParaAlerta.objects.first().días
-    alert = Area.objects.all()
-    areas = Area.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    total_areas = len(areas)
-    alertas = []
-    for area in alert:
-        dias_restantes = area.dias_restantes_mantenimiento()
-        if dias_restantes <= dias_alerta:
-            
-            alertas.append({
-                'area': area,
-                'dias_restantes': dias_restantes
-            })
+    search_query = request.GET.get('search', '')
+    areas = Area.objects.filter(nombre__icontains=search_query)
+    alertas = [{'area': area, 'dias_restantes': area.dias_restantes_mantenimiento()} for area in Area.objects.all() if area.dias_restantes_mantenimiento() <= dias_alerta]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
-    context = {
-        'areas': areas,
-        'total_areas': total_areas,
-        'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
-    }
+    context = {'areas': areas, 'total_areas': areas.count(), 'alertas': alertas_ordenadas, 'total_alertas': len(alertas_ordenadas)}
     return render(request, 'mUP_area/area.html', context)
-
-
-
 
 @login_required
 def alertas(request):
-    dias_alert = get_object_or_404(DiasParaAlerta, id=1)  # Obtener la instancia que se va a modificar
+    dias_alert = get_object_or_404(DiasParaAlerta, id=1)
     if request.method == 'POST':
-        alert_form = DiasParaAlertaForm(request.POST, instance=dias_alert)  # Procesar el formulario con los datos enviados
+        alert_form = DiasParaAlertaForm(request.POST, instance=dias_alert)
         if alert_form.is_valid():
-            días = alert_form.cleaned_data.get('días')
-            if días < 1:
-                return redirect('area_alertas')
-            else:
-                alert_form.save()  # Guardar los cambios en la instancia
-                return redirect('area_alertas')  # Redirigir para evitar reenvío del formulario
+            if alert_form.cleaned_data.get('días') >= 1:
+                alert_form.save()
+            return redirect('area_alertas')
     else:
-        alert_form = DiasParaAlertaForm(instance=dias_alert)  # Mostrar el formulario con la instancia actual
-    dias_alerta = dias_alert.días  # Obtener el valor actual de los días para la alerta
-    alert = Area.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    alertas = []
-    for area in alert:
-        dias_restantes = area.dias_restantes_mantenimiento()
-        if dias_restantes <= dias_alerta:
-            alertas.append({
-                'area': area,
-                'dias_restantes': dias_restantes
-            })
+        alert_form = DiasParaAlertaForm(instance=dias_alert)
+    dias_alerta = dias_alert.días
+    alertas = [{'area': area, 'dias_restantes': area.dias_restantes_mantenimiento()} for area in Area.objects.filter(nombre__icontains=request.GET.get('search', '')) if area.dias_restantes_mantenimiento() <= dias_alerta]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
-    context = {
-        'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
-        'alert_form': alert_form,
-    }
+    context = {'alertas': alertas_ordenadas, 'total_alertas': len(alertas_ordenadas), 'alert_form': alert_form}
     return render(request, 'mUP_area/alertas.html', context)
-
-
-
-
-
 
 @login_required
 def tabla_mantenimientos(request):
-    areas = Area.objects.all()
-    tipos_mantenimiento = TipoMantenimientoArea.objects.all()
+    areas = Area.objects.prefetch_related('mantenimientoarea_set').all()
     for area in areas:
         area.mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
-    context = {
-        'areas': areas,
-        'tipos_mantenimiento': tipos_mantenimiento,
-    }
+    context = {'areas': areas, 'tipos_mantenimiento': TipoMantenimientoArea.objects.all()}
     return render(request, 'mUP_area/tablas.html', context)
-
-
-
 
 @login_required
 def crear_area(request):
-    if request.method == 'GET':
-        form = AreaForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_area/nueva.html', context)
+    form = AreaForm(request.POST or None, request.FILES or None)
     if request.method == 'POST':
-        form = AreaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
         if form.is_valid():
             intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
             if intervalo_mantenimiento < 0:
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_area/nueva.html', context)
             else:
-                # Manejo del archivo de imagen
-                if 'imagen' in request.FILES:
-                    form.instance.imagen = request.FILES['imagen']
                 form.save()
                 return redirect('area')
         else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/nueva.html', context)
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+    return render(request, 'mUP_area/nueva.html', {'form': form})
 
-
-
-
-@login_required    
+@login_required
 def detalles(request, id):
-    if request.method == 'GET':
-        area = get_object_or_404(Area, id=id)
-        mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
-        form = AreaForm(instance=area)
-        context = {
-            'area': area,
-            'form': form,
-            'id': id,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_area/detalles.html', context)
-    
+    area = get_object_or_404(Area, id=id)
+    mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
+    form = AreaForm(request.POST or None, request.FILES or None, instance=area)
     if request.method == 'POST':
-        area = get_object_or_404(Area, id = id)
-        form = AreaForm(instance= area)
-        form = AreaForm(request.POST, request.FILES, instance= area)
-
         if form.is_valid():
             intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
             if intervalo_mantenimiento < 0:
-                mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
+                return render(request, 'mUP_area/detalles.html', {
                     'area': area,
                     'form': form,
                     'id': id,
                     'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
+                })
             else:
                 form.save()
-                mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
-                context = {
-                    'area': area,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                return render(request, 'mUP_area/detalles.html', context) 
-        
+                return redirect('detalles_area', id=id)
         else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url)
-
-
-
+            return render(request, 'mUP_area/detalles.html', {
+                'area': area,
+                'form': form,
+                'id': id,
+                'mantenimientos': mantenimientos,
+            })
+    return render(request, 'mUP_area/detalles.html', {
+        'area': area,
+        'form': form,
+        'id': id,
+        'mantenimientos': mantenimientos,
+    })
 
 @login_required
 def eliminar(request, id):
@@ -187,111 +104,68 @@ def eliminar(request, id):
 # fin de vistas generales-----------------------------------------------    
 
 
-
-
 @login_required
 def eliminar_mantenimiento(request, id):
     mantenimiento = get_object_or_404(MantenimientoArea, id=id)
     mantenimiento.delete()
     previous_url = request.META.get('HTTP_REFERER')
     return HttpResponseRedirect(previous_url)
-
-
-
-
+    
 @login_required
 def mantenimientos_area(request, id, mant):
-    if request.method == 'GET':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
-        mantenimientos = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'area': area,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_area/manteniminetos.html', context)  
-
-
-
+    area = get_object_or_404(Area, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant)
+    mantenimientos = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    context = {
+        'area': area,
+        'tipo_mantenimiento': tipo_mantenimiento,
+        'mantenimientos': mantenimientos,
+    }
+    return render(request, 'mUP_area/manteniminetos.html', context)    
 
 @login_required
 def mod_mantenimiento_area(request, id, mant):
-    if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoArea, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
-        area =mantenimiento.area
-        form_mant = MantenimientoAreaForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'area': area,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_area/mod_mantenimineto.html', context)
-
+    mantenimiento = get_object_or_404(MantenimientoArea, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant)
+    area = mantenimiento.area
     if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoArea, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
-        area =mantenimiento.area
         form_mant = MantenimientoAreaForm(request.POST, request.FILES, instance=mantenimiento)
-
         if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.area = area
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.save()
+            form_mant.save()
             return redirect('mantenimientos_area', id=area.id, mant=mant)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'area': area,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/mod_mantenimineto.html', context)    
-    
-    return HttpResponse("Method Not Allowed", status=405)            
-
-
-
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+    else:
+        form_mant = MantenimientoAreaForm(instance=mantenimiento)
+    context = {
+        'form_mant': form_mant,
+        'area': area,
+        'tipo_mantenimiento': tipo_mantenimiento,
+    }
+    return render(request, 'mUP_area/mod_mantenimineto.html', context)
 
 @login_required
 def nuevo_mantenimiento_area(request, id, mant):
-    if request.method == 'GET':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
-        form_mant = MantenimientoAreaForm()
-        context = {
-            'form_mant': form_mant,
-            'area': area,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_area/nuevo_mantenimineto.html', context)
-    
+    area = get_object_or_404(Area, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant)
     if request.method == 'POST':
-        area = get_object_or_404(Area, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant) 
         form_mant = MantenimientoAreaForm(request.POST, request.FILES)
-
         if form_mant.is_valid():
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.area = area
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
             return redirect('mantenimientos_area', id=area.id, mant=mant)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'area': area,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_area/nuevo_mantenimineto.html', context)
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+    else:
+        form_mant = MantenimientoAreaForm()
+    context = {
+        'form_mant': form_mant,
+        'area': area,
+        'tipo_mantenimiento': tipo_mantenimiento,
+    }
+    return render(request, 'mUP_area/nuevo_mantenimineto.html', context)
 
-    return HttpResponse("Method Not Allowed", status=405)
-
-
-
+#---------------------------------------------------------------------------------
 
 @login_required
 def documento_general_mantenimientos_area(request):
