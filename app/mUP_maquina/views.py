@@ -3,7 +3,7 @@ from .models import Maquina, MantenimientoMaquina, TipoMantenimientoMaquina, Hor
 from .forms import MaquinaForm, MantenimientoMaquinaCorrectivoForm, MantenimientoMaquinaPreventivoForm, HorasParaAlertaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 
 import openpyxl
@@ -15,69 +15,46 @@ from openpyxl.styles import Font, PatternFill
 
 @login_required
 def maquina(request):
-    horas_alerta = HorasParaAlerta.objects.first().horas
-    alert = Maquina.objects.all()
-    maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    total_maquinas = len(maquinas)
-    alertas = []
-    for maquina in alert:
-        horas_restantes = maquina.horas_restantes_mantenimiento()
-        if horas_restantes <= horas_alerta:
-            
-            alertas.append({
-                'maquina': maquina,
-                'horas_restantes': horas_restantes
-            })
+    horas_alerta = HorasParaAlerta.objects.values_list('horas', flat=True).first()
+    search_query = request.GET.get('search', '')
+    maquinas = Maquina.objects.filter(nombre__icontains=search_query)
+    total_maquinas = maquinas.count()
+    alertas = [
+        {'maquina': maquina, 'horas_restantes': maquina.horas_restantes_mantenimiento()}
+        for maquina in Maquina.objects.all()
+        if maquina.horas_restantes_mantenimiento() <= horas_alerta
+    ]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['horas_restantes'])
-    total_alertas = len(alertas_ordenadas)
     context = {
         'maquinas': maquinas,
         'total_maquinas': total_maquinas,
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'total_alertas': len(alertas_ordenadas),
     }
     return render(request, 'mUP_maquina/maquina.html', context)
-
-
-
 
 @login_required
 def alertas(request):
     horas_alert = get_object_or_404(HorasParaAlerta, id=1)
-    if request.method == 'POST':
-        alert_form = HorasParaAlertaForm(request.POST, instance=horas_alert) 
-        if alert_form.is_valid():
-            horas = alert_form.cleaned_data.get('horas')
-            if horas < 1:
-                return redirect('maquina_alertas')
-            else:
-                alert_form.save()
-                return redirect('maquina_alertas')    
-    else:
-        alert_form = HorasParaAlertaForm(instance=horas_alert)
+    alert_form = HorasParaAlertaForm(request.POST or None, instance=horas_alert)
+    if request.method == 'POST' and alert_form.is_valid():
+        horas = alert_form.cleaned_data['horas']
+        if horas >= 1:
+            alert_form.save()
+        return redirect('maquina_alertas')
     horas_alerta = horas_alert.horas
-    
-    alert = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    alertas = []
-    for maquina in alert:
-        horas_restantes = maquina.horas_restantes_mantenimiento()
-        if horas_restantes <= horas_alerta:
-            
-            alertas.append({
-                'maquina': maquina,
-                'horas_restantes': horas_restantes
-            })
-    alertas_ordenadas = sorted(alertas, key=lambda x: x['horas_restantes'])
-    total_alertas = len(alertas_ordenadas)
+    search_query = request.GET.get('search', '')
+    alertas = [
+        {'maquina': maquina, 'horas_restantes': maquina.horas_restantes_mantenimiento()}
+        for maquina in Maquina.objects.filter(nombre__icontains=search_query)
+        if maquina.horas_restantes_mantenimiento() <= horas_alerta
+    ]
     context = {
-        'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'alertas': sorted(alertas, key=lambda x: x['horas_restantes']),
+        'total_alertas': len(alertas),
         'alert_form': alert_form,
     }
     return render(request, 'mUP_maquina/alertas.html', context)
-
-
-
 
 @login_required
 def tabla_mantenimientos(request):
@@ -91,92 +68,50 @@ def tabla_mantenimientos(request):
     }
     return render(request, 'mUP_maquina/tablas.html', context)
 
-
-
-
 @login_required
 def crear_maquina(request):
-    if request.method == 'GET':
-        form = MaquinaForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_maquina/nueva.html', context)
-    if request.method == 'POST':
-        form = MaquinaForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
-        if form.is_valid():
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            if intervalo_mantenimiento < 0:
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_maquina/nueva.html', context)
-            else:
-                # Manejo del archivo de imagen
-                if 'imagen' in request.FILES:
-                    form.instance.imagen = request.FILES['imagen']
-                form.save()
-                return redirect('maquina')
+    form = MaquinaForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        intervalo_mantenimiento = form.cleaned_data['intervalo_mantenimiento']
+        if intervalo_mantenimiento < 0:
+            form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
         else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_maquina/nueva.html', context)
-
-
-
+            if 'imagen' in request.FILES:
+                form.instance.imagen = request.FILES['imagen']
+            form.save()
+            return redirect('maquina')
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+    context = {'form': form}
+    return render(request, 'mUP_maquina/nueva.html', context)
 
 @login_required    
 def detalles(request, id):
-    if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
-        form = MaquinaForm(instance=maquina)
-        context = {
-            'maquina': maquina,
-            'form': form,
-            'id': id,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_maquina/detalles.html', context)
+    maquina = get_object_or_404(Maquina, id=id)
+    mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
     
     if request.method == 'POST':
-        maquina = get_object_or_404(Maquina, id=id)
-        form = MaquinaForm(instance=maquina)
         form = MaquinaForm(request.POST, request.FILES, instance=maquina)
-
         if form.is_valid():
             intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
             if intervalo_mantenimiento < 0:
-                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
                 form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'maquina': maquina,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
             else:
                 form.save()
-                mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
-                context = {
+                return render(request, 'mUP_maquina/detalles.html', {
                     'maquina': maquina,
                     'form': form,
                     'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                return render(request, 'mUP_maquina/detalles.html', context) 
-        
-        else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url)
+                    'mantenimientos': mantenimientos
+                })
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-
-
+    form = MaquinaForm(instance=maquina)
+    return render(request, 'mUP_maquina/detalles.html', {
+        'maquina': maquina,
+        'form': form,
+        'id': id,
+        'mantenimientos': mantenimientos
+    })
 
 @login_required
 def eliminar(request, id):
