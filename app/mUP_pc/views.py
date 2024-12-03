@@ -15,166 +15,117 @@ from openpyxl.styles import Font, PatternFill
 
 @login_required
 def pc(request):
+    search_query = request.GET.get('search', '')
     dias_alerta = DiasParaAlerta.objects.first().días
-    alert = PC.objects.all()
-    pcs = PC.objects.filter(nombre__icontains=request.GET.get('search', ''))
-    total_pcs = len(pcs)
+    pcs = PC.objects.filter(nombre__icontains=search_query)
+    total_pcs = pcs.count()
     alertas = []
-    for pc in alert:
+    for pc in PC.objects.all():
         dias_restantes = pc.dias_restantes_mantenimiento()
         if dias_restantes <= dias_alerta:
-            
             alertas.append({
                 'pc': pc,
                 'dias_restantes': dias_restantes
             })
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
-    context = {
+    return render(request, 'mUP_pc/pc.html', {
         'pcs': pcs,
         'total_pcs': total_pcs,
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
-    }
-    return render(request, 'mUP_pc/pc.html', context)
-
-
-
+        'total_alertas': len(alertas_ordenadas),
+    })
 
 @login_required
 def alertas(request):
-    dias_alert = get_object_or_404(DiasParaAlerta, id=1)  # Obtener la instancia que se va a modificar
+    dias_alert = get_object_or_404(DiasParaAlerta, id=1)
+    search_query = request.GET.get('search', '')
     if request.method == 'POST':
-        alert_form = DiasParaAlertaForm(request.POST, instance=dias_alert)  # Procesar el formulario con los datos enviados
+        alert_form = DiasParaAlertaForm(request.POST, instance=dias_alert)
         if alert_form.is_valid():
             días = alert_form.cleaned_data.get('días')
-            if días < 1:
-                return redirect('pc_alertas')
-            else:
-                alert_form.save()  # Guardar los cambios en la instancia
-                return redirect('pc_alertas')  # Redirigir para evitar reenvío del formulario
+            if días >= 1:
+                alert_form.save()
+            return redirect('pc_alertas')
     else:
-        alert_form = DiasParaAlertaForm(instance=dias_alert)  # Mostrar el formulario con la instancia actual
-    dias_alerta = dias_alert.días  # Obtener el valor actual de los días para la alerta
-    alert = PC.objects.filter(nombre__icontains=request.GET.get('search', ''))
+        alert_form = DiasParaAlertaForm(instance=dias_alert)
     alertas = []
-    for pc in alert:
+    for pc in PC.objects.filter(nombre__icontains=search_query):
         dias_restantes = pc.dias_restantes_mantenimiento()
-        if dias_restantes <= dias_alerta:
+        if dias_restantes <= dias_alert.días:
             alertas.append({
                 'pc': pc,
                 'dias_restantes': dias_restantes
             })
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    total_alertas = len(alertas_ordenadas)
-    context = {
+    return render(request, 'mUP_pc/alertas.html', {
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'total_alertas': len(alertas_ordenadas),
         'alert_form': alert_form,
-    }
-    return render(request, 'mUP_pc/alertas.html', context)
-
-
-
+    })
 
 @login_required
 def tabla_mantenimientos(request):
-    pcs = PC.objects.all()
-    tipos_mantenimiento = TipoMantenimientoPC.objects.all()
+    pcs = PC.objects.prefetch_related('mantenimientopc_set').all()
     for pc in pcs:
-        pc.mantenimientos = pc.mantenimientopc_set.all().order_by('-fecha_fin', '-hora_fin')
-    context = {
+        pc.mantenimientos = pc.mantenimientopc_set.order_by('-fecha_fin', '-hora_fin')
+    return render(request, 'mUP_pc/tablas.html', {
         'pcs': pcs,
-        'tipos_mantenimiento': tipos_mantenimiento,
-    }
-    return render(request, 'mUP_pc/tablas.html', context)
+        'tipos_mantenimiento': TipoMantenimientoPC.objects.all(),
+    })
 
-
-
+# vistas de creación --------------------------------------------------------
 
 @login_required
 def crear_pc(request):
     if request.method == 'GET':
-        form = PCForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_pc/nueva.html', context)
+        return render(request, 'mUP_pc/nueva.html', {'form': PCForm()})
+    
     if request.method == 'POST':
-        form = PCForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
-        if form.is_valid():
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            if intervalo_mantenimiento < 0:
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_pc/nueva.html', context)
-            else:
-                # Manejo del archivo de imagen
-                if 'imagen' in request.FILES:
-                    form.instance.imagen = request.FILES['imagen']
-                form.save()
-                return redirect('pc')
-        else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/nueva.html', context)
+        form = PCForm(request.POST, request.FILES)
+        if not form.is_valid():
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_pc/nueva.html', {'form': form})   
+        intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
+        if intervalo_mantenimiento < 0:
+            form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
+            return render(request, 'mUP_pc/nueva.html', {'form': form})
+        if 'imagen' in request.FILES:
+            form.instance.imagen = request.FILES['imagen']
+        form.save()
+        return redirect('pc')
 
-
-
+# vistas de detalles --------------------------------------------------------
 
 @login_required    
 def detalles(request, id):
+    pc = get_object_or_404(PC, id=id)
+    mantenimientos = pc.mantenimientopc_set.all().order_by('-fecha_fin', '-hora_fin')
+
     if request.method == 'GET':
-        pc = get_object_or_404(PC, id=id)
-        mantenimientos = pc.mantenimientopc_set.all().order_by('-fecha_fin', '-hora_fin')
-        form = PCForm(instance=pc)
-        context = {
+        return render(request, 'mUP_pc/detalles.html', {
+            'pc': pc,
+            'form': PCForm(instance=pc),
+            'id': id,
+            'mantenimientos': mantenimientos,
+        })
+    
+    if request.method == 'POST':
+        form = PCForm(request.POST, request.FILES, instance=pc)
+        if not form.is_valid():
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))   
+        intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
+        if intervalo_mantenimiento < 0:
+            form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))   
+        form.save()
+        return render(request, 'mUP_pc/detalles.html', {
             'pc': pc,
             'form': form,
             'id': id,
             'mantenimientos': mantenimientos,
-            }
-        return render(request, 'mUP_pc/detalles.html', context)
-    
-    if request.method == 'POST':
-        pc = get_object_or_404(PC, id=id)
-        form = PCForm(instance=pc)
-        form = PCForm(request.POST, request.FILES, instance=pc)
+        })
 
-        if form.is_valid():
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            if intervalo_mantenimiento < 0:
-                mantenimientos = pc.mantenimientopc_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'pc': pc,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            else:
-                form.save()
-                mantenimientos = pc.mantenimientopc_set.all().order_by('-fecha_fin', '-hora_fin')
-                context = {
-                    'pc': pc,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                return render(request, 'mUP_pc/detalles.html', context) 
-        
-        else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url)            
-
-
-
+# vistas de eliminación -----------------------------------------------------
 
 @login_required
 def eliminar(request, id):
@@ -187,6 +138,8 @@ def eliminar(request, id):
 
 
 
+# vistas de mantenimientos --------------------------------------------------
+
 @login_required
 def eliminar_mantenimiento(request, id):
     mantenimiento = get_object_or_404(MantenimientoPC, id=id)
@@ -194,99 +147,68 @@ def eliminar_mantenimiento(request, id):
     previous_url = request.META.get('HTTP_REFERER')
     return HttpResponseRedirect(previous_url)
 
-
-
-
 @login_required
 def mantenimientos_pc(request, id, mant):
-    if request.method == 'GET':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-        mantenimientos = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_pc/mantenimientos_pc.html', context) 
-
-
-
+    pc = get_object_or_404(PC, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
+    mantenimientos = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    context = {
+        'pc': pc,
+        'tipo_mantenimiento': tipo_mantenimiento,
+        'mantenimientos': mantenimientos,
+    }
+    return render(request, 'mUP_pc/mantenimientos_pc.html', context) 
 
 @login_required
 def mod_mantenimiento_pc(request, id, mant):
+    mantenimiento = get_object_or_404(MantenimientoPC, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant)
+    pc = mantenimiento.pc
+
     if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoPC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-        pc = mantenimiento.pc
         form_mant = MantenimientoPCForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento
-        }
-        return render(request, 'mUP_pc/mod_mantenimiento.html', context) 
-
-    if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoPC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-        pc = mantenimiento.pc 
+    elif request.method == 'POST':
         form_mant = MantenimientoPCForm(request.POST, request.FILES, instance=mantenimiento)
-
         if form_mant.is_valid():
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.pc = pc
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
             return redirect('mantenimientos_pc', id=pc.id, mant=mant)
-        else:
-            context = {
-            'form_mant': form_mant,
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/mod_mantenimiento.html', context)                  
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
 
-    return HttpResponse("Method Not Allowed", status=405) 
-
-
-
+    context = {
+        'form_mant': form_mant,
+        'pc': pc,
+        'tipo_mantenimiento': tipo_mantenimiento
+    }
+    return render(request, 'mUP_pc/mod_mantenimiento.html', context) if request.method in ['GET', 'POST'] else HttpResponse("Method Not Allowed", status=405)
 
 @login_required
 def nuevo_mantenimiento_pc(request, id, mant):
-    if request.method == 'GET':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-        form_mant = MantenimientoPCForm()
-        context = {
-            'form_mant': form_mant,
-            'pc': pc,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_pc/nuevo_mantenimiento.html', context)
-    
-    if request.method == 'POST':
-        pc = get_object_or_404(PC, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-        form_mant = MantenimientoPCForm(request.POST, request.FILES)
+    pc = get_object_or_404(PC, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant)
 
+    if request.method == 'GET':
+        form_mant = MantenimientoPCForm()
+    elif request.method == 'POST':
+        form_mant = MantenimientoPCForm(request.POST, request.FILES)
         if form_mant.is_valid():
             mantenimiento = form_mant.save(commit=False)
             mantenimiento.pc = pc
             mantenimiento.tipo = tipo_mantenimiento
             mantenimiento.save()
             return redirect('mantenimientos_pc', id=pc.id, mant=mant)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'pc': pc,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_pc/nuevo_mantenimiento.html', context)
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
 
-    return HttpResponse("Method Not Allowed", status=405)
+    context = {
+        'form_mant': form_mant,
+        'pc': pc,
+        'tipo_mantenimiento': tipo_mantenimiento,
+    }
+    return render(request, 'mUP_pc/nuevo_mantenimiento.html', context) if request.method in ['GET', 'POST'] else HttpResponse("Method Not Allowed", status=405)
+
+
 
 
 
@@ -302,7 +224,6 @@ def documento_general_mantenimientos_pc(request):
 
     if mes:
         mantenimientos = mantenimientos.filter(fecha_fin__month=mes)
-
     if tipo_mantenimiento_id:  # Si se seleccionó un tipo de mantenimiento
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, pk=tipo_mantenimiento_id)
         mantenimientos = mantenimientos.filter(tipo=tipo_mantenimiento)
