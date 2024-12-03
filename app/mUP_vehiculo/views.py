@@ -17,43 +17,24 @@ from openpyxl.styles import Font, PatternFill
 @login_required
 def vehiculo(request):
     km_alerta = KmParaAlerta.objects.first().km
-    alert = Vehiculo.objects.all()
     vehiculos = Vehiculo.objects.filter(marca__icontains=request.GET.get('search', ''))
     total_vehiculos = vehiculos.count()
+
+    def crear_alerta(vehiculo, km_restantes_func):
+        km_restantes = km_restantes_func()
+        if km_restantes <= km_alerta:
+            return {'vehiculo': vehiculo, 'km_restantes': km_restantes}
+        return None
+
     alertas = []
-    for vehiculo in alert:
+    for vehiculo in Vehiculo.objects.all():
+        alertas.extend(filter(None, [
+            crear_alerta(vehiculo, vehiculo.km_restantes_mantenimiento_correctivo),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_filtro_aceite),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona),
+        ]))
 
-        km_restantes_mantenimiento_correctivo = vehiculo.km_restantes_mantenimiento_correctivo()
-        if km_restantes_mantenimiento_correctivo <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_mantenimiento_correctivo,
-            })
-
-        # Cambio de filtro de aceite
-        km_restantes_filtro_aceite = vehiculo.km_restantes_intervalo_cambio_filtro_aceite()
-        if km_restantes_filtro_aceite <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_aceite,
-            })
-
-        # Cambio de filtro de aire/combustible
-        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible()
-        if km_restantes_filtro_aire_combustible <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_aire_combustible,
-            })
-
-        # Cambio de filtro de caja/corona
-        km_restantes_filtro_caja_corona = vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona()
-        if km_restantes_filtro_caja_corona <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_caja_corona,
-            })
-    
     alertas_ordenadas = sorted(alertas, key=lambda x: x['km_restantes'])
     total_alertas = len(alertas_ordenadas)
     context = {
@@ -65,8 +46,6 @@ def vehiculo(request):
     return render(request, 'mUP_vehiculo/vehiculo.html', context)
 
 
-
-
 @login_required
 def alertas(request):
     km_alert = get_object_or_404(KmParaAlerta, id=1)
@@ -74,51 +53,34 @@ def alertas(request):
         alert_form = KmParaAlertaForm(request.POST, instance=km_alert)
         if alert_form.is_valid():
             km = alert_form.cleaned_data.get('km')
-            if km < 1:
-                return redirect('vehiculo_alertas')
-            else:
+            if km >= 1:
                 alert_form.save()
-                return redirect('vehiculo_alertas')
+            return redirect('vehiculo_alertas')
     else:
         alert_form = KmParaAlertaForm(instance=km_alert)
-    km_alerta = km_alert.km                   
+
+    km_alerta = km_alert.km
     search_query = request.GET.get('search', '')
     vehiculos = Vehiculo.objects.filter(marca__icontains=search_query)
+
+    def crear_alerta(vehiculo, km_restantes_func, tipo_id):
+        km_restantes = km_restantes_func()
+        if km_restantes <= km_alerta:
+            return {
+                'vehiculo': vehiculo,
+                'km_restantes': km_restantes,
+                'tipo': TipoMantenimientoVehiculo.objects.get(id=tipo_id).tipo
+            }
+        return None
+
     alertas = []
-    
     for vehiculo in vehiculos:
-
-        km_restantes_mantenimiento_correctivo = vehiculo.km_restantes_mantenimiento_correctivo()
-        if km_restantes_mantenimiento_correctivo <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_mantenimiento_correctivo,
-                'tipo': TipoMantenimientoVehiculo.objects.get(id=1).tipo
-            })
-
-        km_restantes_filtro_aceite = vehiculo.km_restantes_intervalo_cambio_filtro_aceite()
-        if km_restantes_filtro_aceite <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_aceite,
-                'tipo': TipoMantenimientoVehiculo.objects.get(id=3).tipo
-            })
-
-        km_restantes_filtro_aire_combustible = vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible()
-        if km_restantes_filtro_aire_combustible <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_aire_combustible,
-                'tipo': TipoMantenimientoVehiculo.objects.get(id=4).tipo
-            })    
-
-        km_restantes_filtro_caja_corona = vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona()
-        if km_restantes_filtro_caja_corona <= km_alerta:
-            alertas.append({
-                'vehiculo': vehiculo,
-                'km_restantes': km_restantes_filtro_caja_corona,
-                'tipo': TipoMantenimientoVehiculo.objects.get(id=5).tipo
-            })    
+        alertas.extend(filter(None, [
+            crear_alerta(vehiculo, vehiculo.km_restantes_mantenimiento_correctivo, 1),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_filtro_aceite, 3),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_filtro_aire_combustible, 4),
+            crear_alerta(vehiculo, vehiculo.km_restantes_intervalo_cambio_aceite_caja_corona, 5),
+        ]))
 
     alertas_ordenadas = sorted(alertas, key=lambda x: x['km_restantes'])
     total_alertas = len(alertas_ordenadas)
@@ -128,8 +90,6 @@ def alertas(request):
         'alert_form': alert_form,
     }
     return render(request, 'mUP_vehiculo/alertas.html', context)
-
-
 
 
 @login_required
@@ -145,166 +105,83 @@ def tabla_mantenimientos(request):
     return render(request, 'mUP_vehiculo/tablas.html', context) 
 
 
-
-
 @login_required
 def crear_vehiculo(request):
     if request.method == 'GET':
         form = VehiculoForm()
-        context = {
-            'form': form
-        }
-        return render(request, 'mUP_vehiculo/nuevo.html', context)
-    if request.method == 'POST':
-        form = VehiculoForm(request.POST, request.FILES)  # Asegúrate de pasar request.FILES al formulario
+    elif request.method == 'POST':
+        form = VehiculoForm(request.POST, request.FILES)
         if form.is_valid():
-            km_recorridos = form.cleaned_data.get('km_recorridos')
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            intervalo_cambio_filtro_aceite = form.cleaned_data.get('intervalo_cambio_filtro_aceite')
-            intervalo_cambio_filtro_aire_combustible = form.cleaned_data.get('intervalo_cambio_filtro_aire_combustible')
-            intervalo_cambio_aceite_caja_corona = form.cleaned_data.get('intervalo_cambio_aceite_caja_corona')
-            
-            if km_recorridos < 1:
-                form.add_error('km_recorridos', 'Los Km recorridos no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
+            campos_a_validar = [
+                ('km_recorridos', 'Los Km recorridos no puede ser un número negativo'),
+                ('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
+            ]
+
+            errores = False
+            for campo, mensaje in campos_a_validar:
+                if form.cleaned_data.get(campo) < 1:
+                    form.add_error(campo, mensaje)
+                    errores = True
+
+            if errores:
+                context = {'form': form}
                 return render(request, 'mUP_vehiculo/nuevo.html', context)
-            if intervalo_mantenimiento < 1:
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_vehiculo/nuevo.html', context)
-            if intervalo_cambio_filtro_aceite  < 1:
-                form.add_error('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_vehiculo/nuevo.html', context)
-            if intervalo_cambio_filtro_aire_combustible < 1:
-                form.add_error('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_vehiculo/nuevo.html', context)
-            if intervalo_cambio_aceite_caja_corona < 1:
-                form.add_error('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'form': form
-                }
-                return render(request, 'mUP_vehiculo/nuevo.html', context)            
-            else:
-                if 'imagen' in request.FILES:
-                    form.instance.imagen = request.FILES['imagen']
-                form.save()
-                return redirect('vehiculo')
+
+            if 'imagen' in request.FILES:
+                form.instance.imagen = request.FILES['imagen']
+            form.save()
+            return redirect('vehiculo')
         else:
-            context = {
-                'form': form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_vehiculo/nuevo.html', context)    
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
 
-
+    context = {'form': form}
+    return render(request, 'mUP_vehiculo/nuevo.html', context)    
 
 
 @login_required    
 def detalles(request, id):
-    if request.method == 'GET':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-        form = VehiculoForm(instance=vehiculo)
-        context = {
-            'vehiculo': vehiculo,
-            'form': form,
-            'id': id,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_vehiculo/detalles.html', context)
-    
+    vehiculo = get_object_or_404(Vehiculo, id=id)
+    mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
+    form = VehiculoForm(instance=vehiculo)
+
     if request.method == 'POST':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        form = VehiculoForm(instance=vehiculo)
         form = VehiculoForm(request.POST, request.FILES, instance=vehiculo)
-
         if form.is_valid():
-            km_recorridos = form.cleaned_data.get('km_recorridos')
-            intervalo_mantenimiento = form.cleaned_data.get('intervalo_mantenimiento')
-            intervalo_cambio_filtro_aceite = form.cleaned_data.get('intervalo_cambio_filtro_aceite')
-            intervalo_cambio_filtro_aire_combustible = form.cleaned_data.get('intervalo_cambio_filtro_aire_combustible')
-            intervalo_cambio_aceite_caja_corona = form.cleaned_data.get('intervalo_cambio_aceite_caja_corona')
-            if km_recorridos < 0:
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('km_recorridos', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            if intervalo_mantenimiento < 0:
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            if intervalo_cambio_filtro_aceite < 0:
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            if intervalo_cambio_filtro_aire_combustible < 0:
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)
-            if intervalo_cambio_aceite_caja_corona < 0:
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                form.add_error('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                previous_url = request.META.get('HTTP_REFERER')
-                return HttpResponseRedirect(previous_url)            
-            else:
-                form.save()
-                mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
-                context = {
-                    'vehiculo': vehiculo,
-                    'form': form,
-                    'id': id,
-                    'mantenimientos': mantenimientos,
-                }
-                return render(request, 'mUP_vehiculo/detalles.html', context) 
-        
-        else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url) 
+            campos_a_validar = [
+                ('km_recorridos', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_mantenimiento', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_filtro_aceite', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_filtro_aire_combustible', 'El intervalo de mantenimiento no puede ser un número negativo'),
+                ('intervalo_cambio_aceite_caja_corona', 'El intervalo de mantenimiento no puede ser un número negativo')
+            ]
 
+            errores = False
+            for campo, mensaje in campos_a_validar:
+                if form.cleaned_data.get(campo) < 0:
+                    form.add_error(campo, mensaje)
+                    errores = True
 
+            if errores:
+                context = {
+                    'vehiculo': vehiculo,
+                    'form': form,
+                    'id': id,
+                    'mantenimientos': mantenimientos,
+                }
+                return render(request, 'mUP_vehiculo/detalles.html', context)
+
+            form.save()
+
+    context = {
+        'vehiculo': vehiculo,
+        'form': form,
+        'id': id,
+        'mantenimientos': mantenimientos,
+    }
+    return render(request, 'mUP_vehiculo/detalles.html', context)
 
 
 @login_required
@@ -343,101 +220,64 @@ def mantenimientos_vehiculo(request, id, mant):
 
 @login_required
 def nuevo_mantenimiento_vehiculo(request, id, mant):
+    vehiculo = get_object_or_404(Vehiculo, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
+
     if request.method == 'GET':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
         form_mant = MantenimientoVehiculoForm()
-        context = {
-            'form_mant': form_mant,
-            'vehiculo': vehiculo,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
-
-    if request.method == 'POST':
-        vehiculo = get_object_or_404(Vehiculo, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
+    elif request.method == 'POST':
         form_mant = MantenimientoVehiculoForm(request.POST, request.FILES)
-
         if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.vehiculo = vehiculo
-            mantenimiento.tipo = tipo_mantenimiento
-            if 'imagen' in request.FILES:
-                mantenimiento.imagen = request.FILES['imagen']
             if form_mant.cleaned_data['km_recorridos'] > vehiculo.km_recorridos:
-                form_mant.add_error('km_recorridos', 'Los Km recorridos del mantenimineto no pueden ser mayores que los Km recorridos del vehículo en general')
-                context = {
-                    'form_mant': form_mant,
-                    'vehiculo': vehiculo,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")     
-                return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
+                form_mant.add_error('km_recorridos', 'Los Km recorridos del mantenimiento no pueden ser mayores que los Km recorridos del vehículo en general')
+                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
             else:
+                mantenimiento = form_mant.save(commit=False)
+                mantenimiento.vehiculo = vehiculo
+                mantenimiento.tipo = tipo_mantenimiento
+                if 'imagen' in request.FILES:
+                    mantenimiento.imagen = request.FILES['imagen']
                 mantenimiento.save()
                 return redirect('mantenimientos_vehiculo', id=vehiculo.id, mant=mant)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'vehiculo': vehiculo,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-            return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context)
 
-    return HttpResponse("Method Not Allowed", status=405)        
+    context = {
+        'form_mant': form_mant,
+        'vehiculo': vehiculo,
+        'tipo_mantenimiento': tipo_mantenimiento,
+    }
+    return render(request, 'mUP_vehiculo/nuevo_mantenimineto.html', context) if request.method in ['GET', 'POST'] else HttpResponse("Method Not Allowed", status=405)      
 
 
 
 @login_required
 def mod_mantenimiento_vehiculo(request, id, mant):
+    mantenimiento = get_object_or_404(MantenimientoVehiculo, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
+    vehiculo = mantenimiento.vehiculo
+
     if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoVehiculo, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
-        vehiculo = mantenimiento.vehiculo
         form_mant = MantenimientoVehiculoForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'vehiculo': vehiculo,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context)
-
-    if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoVehiculo, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
-        vehiculo = mantenimiento.vehiculo
+    elif request.method == 'POST':
         form_mant = MantenimientoVehiculoForm(request.POST, request.FILES, instance=mantenimiento)
-
         if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.vehiculo = vehiculo
-            mantenimiento.tipo = tipo_mantenimiento
-            if 'image' in request.FILES:
-                mantenimiento.image = request.FILES['image']
             if form_mant.cleaned_data['km_recorridos'] > vehiculo.km_recorridos:
-                form_mant.add_error('km_recorridos', 'Los Km recorridos del mantenimineto no pueden ser mayores que los Km recorridos del vehículo en general')
-                context = {
-                    'form_mant': form_mant,
-                    'vehiculo': vehiculo,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context) 
-                return redirect('nuevo_mantenimiento_vehiculo', id=vehiculo.id, mant=mant)
+                form_mant.add_error('km_recorridos', 'Los Km recorridos del mantenimiento no pueden ser mayores que los Km recorridos del vehículo en general')
+                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
             else:
+                mantenimiento = form_mant.save(commit=False)
+                mantenimiento.vehiculo = vehiculo
+                mantenimiento.tipo = tipo_mantenimiento
+                if 'image' in request.FILES:
+                    mantenimiento.image = request.FILES['image']
                 mantenimiento.save()
                 return redirect('mantenimientos_vehiculo', id=vehiculo.id, mant=mant)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'vehiculo': vehiculo,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
-            return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context)
 
-    return HttpResponse("Method Not Allowed", status=405)
+    context = {
+        'form_mant': form_mant,
+        'vehiculo': vehiculo,
+        'tipo_mantenimiento': tipo_mantenimiento,
+    }
+    return render(request, 'mUP_vehiculo/mod_mantenimineto.html', context) if request.method in ['GET', 'POST'] else HttpResponse("Method Not Allowed", status=405)
 
 
 
