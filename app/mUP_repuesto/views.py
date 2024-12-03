@@ -16,40 +16,31 @@ from openpyxl.utils import get_column_letter
 # Create your views here.
 @login_required
 def repuesto_maquina(request):
-    if request.method == 'GET':
-        maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
-        alert = Inventario.objects.all()
-        alertas = []
-        for invetario in alert:
-            existencia_fisica = invetario.existencia_fisica()
-            if existencia_fisica <= 2:
-                
-                alertas.append({
-                    'invetario': invetario,
-                    'existencia_fisica': existencia_fisica
-                })
-        total_alertas = len(alertas)
-        form = MaquinaRepuestoForm()
-        context = {
-            'maquinas': maquinas,
-            'form': form,
-            'total_alertas': total_alertas,
+    maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
+    alert = Inventario.objects.all()
+    alertas = [
+        {
+            'invetario': invetario,
+            'existencia_fisica': invetario.existencia_fisica()
         }
-        return render(request, 'mUP_repuesto/repuesto.html', context)
-    if request.method == 'POST':
+        for invetario in alert if invetario.existencia_fisica() <= 2
+    ]
+    total_alertas = len(alertas)
+    if request.method == 'GET':
+        form = MaquinaRepuestoForm()
+    elif request.method == 'POST':
         form = MaquinaRepuestoForm(request.POST)
         if form.is_valid():
             form.save()
             form = MaquinaRepuestoForm()
-            maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
-            context = {
-            'maquinas': maquinas,
-            'form': form
-            }
-            return render(request, 'mUP_repuesto/repuesto.html', context)
         else:
-            previous_url = request.META.get('HTTP_REFERER')
-            return HttpResponseRedirect(previous_url)   
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    context = {
+        'maquinas': maquinas,
+        'form': form,
+        'total_alertas': total_alertas,
+    }
+    return render(request, 'mUP_repuesto/repuesto.html', context)  
         
 
 @login_required
@@ -81,22 +72,13 @@ def actualizar_inventario(request, id):
 
 @login_required
 def detalles(request, id):
+    maquina = get_object_or_404(Maquina, id=id)
+    partes_maquina = Parte.objects.filter(maquina=maquina)
+
     if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        partes_maquina = Parte.objects.filter(maquina=maquina)
         part_form = ParteRepuestoForm()
         inve_form = InventarioRepuestoForm()
-        context = {
-            'maquina': maquina,
-            'partes_maquina': partes_maquina,
-            'part_form': part_form,
-            'inve_form': inve_form
-        }
-        return render(request, 'mUP_repuesto/detalles.html', context) 
-
-    if request.method == 'POST':
-        maquina = get_object_or_404(Maquina, id=id)
-        partes_maquina = Parte.objects.filter(maquina=maquina)
+    elif request.method == 'POST':
         part_form = ParteRepuestoForm(request.POST, request.FILES)
         inve_form = InventarioRepuestoForm(request.POST)
 
@@ -105,7 +87,7 @@ def detalles(request, id):
             parte_id = request.POST.get('parte')
             parte_instance = get_object_or_404(Parte, id=parte_id)
             parte_instance.delete()
-            
+
         if part_form.is_valid():
             parte = part_form.save(commit=False)
             parte.maquina = maquina
@@ -120,49 +102,38 @@ def detalles(request, id):
             inve_instance.parte = parte_instance
             inve_instance.save()
 
-        maquina = get_object_or_404(Maquina, id=id)
         part_form = ParteRepuestoForm()
         inve_form = InventarioRepuestoForm()
-        partes_maquina = Parte.objects.filter(maquina=maquina)
-        context = {
-            'maquina': maquina,
-            'part_form': part_form,
-            'partes_maquina': partes_maquina,
-            'inve_form': inve_form,
-        }
-        return render(request, 'mUP_repuesto/detalles.html', context)  
+
+    context = {
+        'maquina': maquina,
+        'partes_maquina': partes_maquina,
+        'part_form': part_form,
+        'inve_form': inve_form
+    }
+    return render(request, 'mUP_repuesto/detalles.html', context)
 
 
 def mod_inventario(request, id):
+    inventario = get_object_or_404(Inventario, id=id)
+    parte = inventario.parte
+
     if request.method == 'GET':
-        inventario = get_object_or_404(Inventario, id=id)
-        parte = inventario.parte
         inve_form = InventarioRepuestoForm(instance=inventario)
-        context = {
-            'parte': parte,
-            'inve_form': inve_form
-        }
-        return render(request, 'mUP_repuesto/mod_inventario.html', context)
-
-    if request.method == 'POST':
-        inventario = get_object_or_404(Inventario, id=id)
-        parte = inventario.parte
+    elif request.method == 'POST':
         inve_form = InventarioRepuestoForm(request.POST, instance=inventario)
-
         if inve_form.is_valid():
             inventario = inve_form.save(commit=False)
             inventario.parte = parte
             inventario.save()
             return redirect('detalles_repuesto_maquina', id=parte.maquina.id)
-        else:
-            context = {
-                'parte': parte,
-                'inve_form': inve_form
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_repuesto/mod_inventario.html', context)    
+        messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
 
-    return HttpResponse("Method Not Allowed", status=405)        
+    context = {
+        'parte': parte,
+        'inve_form': inve_form
+    }
+    return render(request, 'mUP_repuesto/mod_inventario.html', context) if request.method in ['GET', 'POST'] else HttpResponse("Method Not Allowed", status=405)     
 
 
 

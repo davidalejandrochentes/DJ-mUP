@@ -19,7 +19,7 @@ def vehiculo(request):
     km_alerta = KmParaAlerta.objects.first().km
     alert = Vehiculo.objects.all()
     vehiculos = Vehiculo.objects.filter(marca__icontains=request.GET.get('search', ''))
-    total_vehiculos = len(vehiculos)
+    total_vehiculos = vehiculos.count()
     alertas = []
     for vehiculo in alert:
 
