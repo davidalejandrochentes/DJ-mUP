@@ -85,6 +85,34 @@
 
     </div>
 
+    <div class="pagination mt-2 justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if inventarios.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ inventarios.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in inventarios.paginator.page_range %}
+                <li class="page-item {% if inventarios.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if inventarios.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ inventarios.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
 </div>
 
 {% endblock %}

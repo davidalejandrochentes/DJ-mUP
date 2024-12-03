@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -17,17 +18,28 @@ from openpyxl.styles import Font, PatternFill
 def maquina(request):
     horas_alerta = HorasParaAlerta.objects.values_list('horas', flat=True).first()
     search_query = request.GET.get('search', '')
-    maquinas = Maquina.objects.filter(nombre__icontains=search_query)
-    total_maquinas = maquinas.count()
+    maquinas_list = Maquina.objects.filter(nombre__icontains=search_query)
+    
     alertas = [
         {'maquina': maquina, 'horas_restantes': maquina.horas_restantes_mantenimiento()}
         for maquina in Maquina.objects.all()
         if maquina.horas_restantes_mantenimiento() <= horas_alerta
     ]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['horas_restantes'])
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(maquinas_list, 10)  # 10 máquinas por página
+    try:
+        maquinas = paginator.page(page)
+    except PageNotAnInteger:
+        maquinas = paginator.page(1)
+    except EmptyPage:
+        maquinas = paginator.page(paginator.num_pages)
+    
     context = {
         'maquinas': maquinas,
-        'total_maquinas': total_maquinas,
+        'total_maquinas': maquinas_list.count(),
         'alertas': alertas_ordenadas,
         'total_alertas': len(alertas_ordenadas),
     }
@@ -42,6 +54,7 @@ def alertas(request):
         if horas >= 1:
             alert_form.save()
         return redirect('maquina_alertas')
+    
     horas_alerta = horas_alert.horas
     search_query = request.GET.get('search', '')
     alertas = [
@@ -49,21 +62,46 @@ def alertas(request):
         for maquina in Maquina.objects.filter(nombre__icontains=search_query)
         if maquina.horas_restantes_mantenimiento() <= horas_alerta
     ]
+    alertas_ordenadas = sorted(alertas, key=lambda x: x['horas_restantes'])
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(alertas_ordenadas, 10)  # 10 alertas por página
+    try:
+        alertas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        alertas_paginadas = paginator.page(1)
+    except EmptyPage:
+        alertas_paginadas = paginator.page(paginator.num_pages)
+    
     context = {
-        'alertas': sorted(alertas, key=lambda x: x['horas_restantes']),
-        'total_alertas': len(alertas),
+        'alertas': alertas_paginadas,
+        'total_alertas': len(alertas_ordenadas),
         'alert_form': alert_form,
     }
     return render(request, 'mUP_maquina/alertas.html', context)
 
 @login_required
 def tabla_mantenimientos(request):
-    maquinas = Maquina.objects.all()
+    maquinas_list = Maquina.objects.prefetch_related('mantenimientomaquina_set').all()
     tipos_mantenimiento = TipoMantenimientoMaquina.objects.all()
-    for maquina in maquinas:
+    
+    for maquina in maquinas_list:
         maquina.mantenimientos = maquina.mantenimientomaquina_set.all().order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(maquinas_list, 10)  # 10 máquinas por página
+    try:
+        maquinas = paginator.page(page)
+    except PageNotAnInteger:
+        maquinas = paginator.page(1)
+    except EmptyPage:
+        maquinas = paginator.page(paginator.num_pages)
+    
     context = {
         'maquinas': maquinas,
+        'total_maquinas': maquinas_list.count(),
         'tipos_mantenimiento': tipos_mantenimiento,
     }
     return render(request, 'mUP_maquina/tablas.html', context)
@@ -133,11 +171,23 @@ def eliminar_mantenimiento(request, id):
 def mantenimientos_maquina_preventivo(request, id):
     maquina = get_object_or_404(Maquina, id=id)
     tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
-    mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    mantenimientos_list = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(mantenimientos_list, 10)  # 10 mantenimientos por página
+    try:
+        mantenimientos = paginator.page(page)
+    except PageNotAnInteger:
+        mantenimientos = paginator.page(1)
+    except EmptyPage:
+        mantenimientos = paginator.page(paginator.num_pages)
+    
     context = {
         'maquina': maquina,
         'tipo_mantenimiento': tipo_mantenimiento,
         'mantenimientos': mantenimientos,
+        'total_mantenimientos': mantenimientos_list.count(),
     }
     return render(request, 'mUP_maquina/manteniminetos_preventivo.html', context)   
 
@@ -215,13 +265,25 @@ def nuevo_mantenimiento_maquina_preventivo(request, id):
 def mantenimientos_maquina_correctivo(request, id):
     maquina = get_object_or_404(Maquina, id=id)
     tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
-    mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    mantenimientos_list = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(mantenimientos_list, 10)  # 10 mantenimientos por página
+    try:
+        mantenimientos = paginator.page(page)
+    except PageNotAnInteger:
+        mantenimientos = paginator.page(1)
+    except EmptyPage:
+        mantenimientos = paginator.page(paginator.num_pages)
+    
     context = {
         'maquina': maquina,
         'tipo_mantenimiento': tipo_mantenimiento,
         'mantenimientos': mantenimientos,
+        'total_mantenimientos': mantenimientos_list.count(),
     }
-    return render(request, 'mUP_maquina/manteniminetos_correctivo.html', context)   
+    return render(request, 'mUP_maquina/manteniminetos_correctivo.html', context)  
 
 @login_required
 def mod_mantenimiento_maquina_correctivo(request, id):

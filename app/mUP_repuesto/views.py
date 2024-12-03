@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import F
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -16,7 +17,11 @@ from openpyxl.utils import get_column_letter
 # Create your views here.
 @login_required
 def repuesto_maquina(request):
-    maquinas = Maquina.objects.filter(nombre__icontains=request.GET.get('search', ''))
+    # Mantener la búsqueda
+    search_query = request.GET.get('search', '')
+    maquinas_list = Maquina.objects.filter(nombre__icontains=search_query)
+    
+    # Alertas
     alert = Inventario.objects.all()
     alertas = [
         {
@@ -26,6 +31,18 @@ def repuesto_maquina(request):
         for invetario in alert if invetario.existencia_fisica() <= 2
     ]
     total_alertas = len(alertas)
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(maquinas_list, 10)  # 10 máquinas por página
+    try:
+        maquinas = paginator.page(page)
+    except PageNotAnInteger:
+        maquinas = paginator.page(1)
+    except EmptyPage:
+        maquinas = paginator.page(paginator.num_pages)
+    
+    # Manejo del formulario
     if request.method == 'GET':
         form = MaquinaRepuestoForm()
     elif request.method == 'POST':
@@ -35,10 +52,13 @@ def repuesto_maquina(request):
             form = MaquinaRepuestoForm()
         else:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
     context = {
         'maquinas': maquinas,
         'form': form,
         'total_alertas': total_alertas,
+        'total_maquinas': maquinas_list.count(),
+        'search': search_query,  # Pasar la búsqueda al contexto para mantenerla en la paginación
     }
     return render(request, 'mUP_repuesto/repuesto.html', context)  
         
@@ -73,7 +93,17 @@ def actualizar_inventario(request, id):
 @login_required
 def detalles(request, id):
     maquina = get_object_or_404(Maquina, id=id)
-    partes_maquina = Parte.objects.filter(maquina=maquina)
+    partes_list = Parte.objects.filter(maquina=maquina)
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(partes_list, 10)  # 10 partes por página
+    try:
+        partes_maquina = paginator.page(page)
+    except PageNotAnInteger:
+        partes_maquina = paginator.page(1)
+    except EmptyPage:
+        partes_maquina = paginator.page(paginator.num_pages)
 
     if request.method == 'GET':
         part_form = ParteRepuestoForm()
@@ -108,6 +138,7 @@ def detalles(request, id):
     context = {
         'maquina': maquina,
         'partes_maquina': partes_maquina,
+        'total_partes': partes_list.count(),
         'part_form': part_form,
         'inve_form': inve_form
     }
@@ -186,9 +217,21 @@ def descargar_excel(request, id):
 
 
 def tabla_general(request):
-    inventarios = Inventario.objects.all()
+    inventarios_list = Inventario.objects.all()
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(inventarios_list, 10)  # 10 inventarios por página
+    try:
+        inventarios = paginator.page(page)
+    except PageNotAnInteger:
+        inventarios = paginator.page(1)
+    except EmptyPage:
+        inventarios = paginator.page(paginator.num_pages)
+    
     context = {
         'inventarios': inventarios,
+        'total_inventarios': inventarios_list.count(),
     }
     return render(request, 'mUP_repuesto/tabla.html', context)
 
@@ -261,9 +304,18 @@ def descargar_excel_general(request):
 
 
 def alerta_repuesto(request):
-    inventarios = Inventario.objects.annotate(existencia_fisica=F('existencia_stock') - F('salida')).filter(existencia_fisica__lte=2)
+    inventarios_list = Inventario.objects.annotate(existencia_fisica=F('existencia_stock') - F('salida')).filter(existencia_fisica__lte=2)
+    
+    page = request.GET.get('page', 1)
+    paginator = Paginator(inventarios_list, 10)  # 10 inventarios por página
+    try:
+        inventarios = paginator.page(page)
+    except PageNotAnInteger:
+        inventarios = paginator.page(1)
+    except EmptyPage:
+        inventarios = paginator.page(paginator.num_pages)
+    
     context = {
         'inventarios': inventarios
     }
-    return render(request, 'mUP_repuesto/alerta.html', context)
-
+    return render(request, 'mUP_repuesto/alerta.html', context)  

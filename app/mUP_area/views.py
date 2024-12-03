@@ -4,7 +4,7 @@ from .forms import AreaForm, MantenimientoAreaForm, DiasParaAlertaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import openpyxl
 from openpyxl.styles import Font, PatternFill
 
@@ -16,10 +16,26 @@ from openpyxl.styles import Font, PatternFill
 def area(request):
     dias_alerta = DiasParaAlerta.objects.first().días
     search_query = request.GET.get('search', '')
-    areas = Area.objects.filter(nombre__icontains=search_query)
+    areas_list = Area.objects.filter(nombre__icontains=search_query)
+    
     alertas = [{'area': area, 'dias_restantes': area.dias_restantes_mantenimiento()} for area in Area.objects.all() if area.dias_restantes_mantenimiento() <= dias_alerta]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    context = {'areas': areas, 'total_areas': areas.count(), 'alertas': alertas_ordenadas, 'total_alertas': len(alertas_ordenadas)}
+    
+    page = request.GET.get('page', 1)
+    paginator = Paginator(areas_list, 10)
+    try:
+        areas = paginator.page(page)
+    except PageNotAnInteger:
+        areas = paginator.page(1)
+    except EmptyPage:
+        areas = paginator.page(paginator.num_pages)  
+    
+    context = {
+        'areas': areas, 
+        'total_areas': areas_list.count(), 
+        'alertas': alertas_ordenadas, 
+        'total_alertas': len(alertas_ordenadas)
+        }
     return render(request, 'mUP_area/area.html', context)
 
 @login_required
@@ -33,18 +49,52 @@ def alertas(request):
             return redirect('area_alertas')
     else:
         alert_form = DiasParaAlertaForm(instance=dias_alert)
+    
     dias_alerta = dias_alert.días
-    alertas = [{'area': area, 'dias_restantes': area.dias_restantes_mantenimiento()} for area in Area.objects.filter(nombre__icontains=request.GET.get('search', '')) if area.dias_restantes_mantenimiento() <= dias_alerta]
+    search_query = request.GET.get('search', '')
+    alertas = [{'area': area, 'dias_restantes': area.dias_restantes_mantenimiento()} 
+              for area in Area.objects.filter(nombre__icontains=search_query) 
+              if area.dias_restantes_mantenimiento() <= dias_alerta]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
-    context = {'alertas': alertas_ordenadas, 'total_alertas': len(alertas_ordenadas), 'alert_form': alert_form}
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(alertas_ordenadas, 10)  # 10 alertas por página
+    try:
+        alertas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        alertas_paginadas = paginator.page(1)
+    except EmptyPage:
+        alertas_paginadas = paginator.page(paginator.num_pages)
+    
+    context = {
+        'alertas': alertas_paginadas, 
+        'total_alertas': len(alertas_ordenadas), 
+        'alert_form': alert_form
+    }
     return render(request, 'mUP_area/alertas.html', context)
 
 @login_required
 def tabla_mantenimientos(request):
-    areas = Area.objects.prefetch_related('mantenimientoarea_set').all()
-    for area in areas:
+    areas_list = Area.objects.prefetch_related('mantenimientoarea_set').all()
+    for area in areas_list:
         area.mantenimientos = area.mantenimientoarea_set.all().order_by('-fecha_fin', '-hora_fin')
-    context = {'areas': areas, 'tipos_mantenimiento': TipoMantenimientoArea.objects.all()}
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(areas_list, 10)  # 10 áreas por página
+    try:
+        areas = paginator.page(page)
+    except PageNotAnInteger:
+        areas = paginator.page(1)
+    except EmptyPage:
+        areas = paginator.page(paginator.num_pages)
+    
+    context = {
+        'areas': areas,
+        'total_areas': areas_list.count(),
+        'tipos_mantenimiento': TipoMantenimientoArea.objects.all()
+    }
     return render(request, 'mUP_area/tablas.html', context)
 
 @login_required
@@ -115,11 +165,23 @@ def eliminar_mantenimiento(request, id):
 def mantenimientos_area(request, id, mant):
     area = get_object_or_404(Area, id=id)
     tipo_mantenimiento = get_object_or_404(TipoMantenimientoArea, id=mant)
-    mantenimientos = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    mantenimientos_list = area.mantenimientoarea_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(mantenimientos_list, 10)  # 10 mantenimientos por página
+    try:
+        mantenimientos = paginator.page(page)
+    except PageNotAnInteger:
+        mantenimientos = paginator.page(1)
+    except EmptyPage:
+        mantenimientos = paginator.page(paginator.num_pages)
+    
     context = {
         'area': area,
         'tipo_mantenimiento': tipo_mantenimiento,
         'mantenimientos': mantenimientos,
+        'total_mantenimientos': mantenimientos_list.count(),
     }
     return render(request, 'mUP_area/manteniminetos.html', context)    
 

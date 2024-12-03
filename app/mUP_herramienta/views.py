@@ -4,6 +4,7 @@ from .forms import HerramientaForm, MantenimientoHerramientaForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -12,15 +13,27 @@ from openpyxl.styles import Font, PatternFill
 @login_required
 def herramienta(request):
     search_term = request.GET.get('search', '')
-    herramientas = Herramienta.objects.filter(nombre__icontains=search_term)
+    herramientas_list = Herramienta.objects.filter(nombre__icontains=search_term)
+    
     alertas = [
         {'herramienta': h, 'dias_restantes': h.dias_restantes_mantenimiento()}
         for h in Herramienta.objects.all() if h.dias_restantes_mantenimiento() <= 7
     ]
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(herramientas_list, 10)  # 10 herramientas por página
+    try:
+        herramientas = paginator.page(page)
+    except PageNotAnInteger:
+        herramientas = paginator.page(1)
+    except EmptyPage:
+        herramientas = paginator.page(paginator.num_pages)
+    
     context = {
         'herramientas': herramientas,
-        'total_herramientas': len(herramientas),
+        'total_herramientas': herramientas_list.count(),
         'alertas': alertas_ordenadas,
         'total_alertas': len(alertas_ordenadas),
     }

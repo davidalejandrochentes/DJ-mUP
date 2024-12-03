@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -17,8 +18,8 @@ from openpyxl.styles import Font, PatternFill
 def pc(request):
     search_query = request.GET.get('search', '')
     dias_alerta = DiasParaAlerta.objects.first().días
-    pcs = PC.objects.filter(nombre__icontains=search_query)
-    total_pcs = pcs.count()
+    pcs_list = PC.objects.filter(nombre__icontains=search_query)
+    
     alertas = []
     for pc in PC.objects.all():
         dias_restantes = pc.dias_restantes_mantenimiento()
@@ -28,9 +29,20 @@ def pc(request):
                 'dias_restantes': dias_restantes
             })
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(pcs_list, 10)  # 10 PCs por página
+    try:
+        pcs = paginator.page(page)
+    except PageNotAnInteger:
+        pcs = paginator.page(1)
+    except EmptyPage:
+        pcs = paginator.page(paginator.num_pages)
+    
     return render(request, 'mUP_pc/pc.html', {
         'pcs': pcs,
-        'total_pcs': total_pcs,
+        'total_pcs': pcs_list.count(),
         'alertas': alertas_ordenadas,
         'total_alertas': len(alertas_ordenadas),
     })
@@ -48,6 +60,7 @@ def alertas(request):
             return redirect('pc_alertas')
     else:
         alert_form = DiasParaAlertaForm(instance=dias_alert)
+    
     alertas = []
     for pc in PC.objects.filter(nombre__icontains=search_query):
         dias_restantes = pc.dias_restantes_mantenimiento()
@@ -57,21 +70,45 @@ def alertas(request):
                 'dias_restantes': dias_restantes
             })
     alertas_ordenadas = sorted(alertas, key=lambda x: x['dias_restantes'])
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(alertas_ordenadas, 10)  # 10 alertas por página
+    try:
+        alertas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        alertas_paginadas = paginator.page(1)
+    except EmptyPage:
+        alertas_paginadas = paginator.page(paginator.num_pages)
+    
     return render(request, 'mUP_pc/alertas.html', {
-        'alertas': alertas_ordenadas,
+        'alertas': alertas_paginadas,
         'total_alertas': len(alertas_ordenadas),
         'alert_form': alert_form,
     })
 
 @login_required
 def tabla_mantenimientos(request):
-    pcs = PC.objects.prefetch_related('mantenimientopc_set').all()
-    for pc in pcs:
+    pcs_list = PC.objects.prefetch_related('mantenimientopc_set').all()
+    for pc in pcs_list:
         pc.mantenimientos = pc.mantenimientopc_set.order_by('-fecha_fin', '-hora_fin')
-    return render(request, 'mUP_pc/tablas.html', {
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(pcs_list, 10)  # 10 PCs por página
+    try:
+        pcs = paginator.page(page)
+    except PageNotAnInteger:
+        pcs = paginator.page(1)
+    except EmptyPage:
+        pcs = paginator.page(paginator.num_pages)
+    
+    context = {
         'pcs': pcs,
+        'total_pcs': pcs_list.count(),
         'tipos_mantenimiento': TipoMantenimientoPC.objects.all(),
-    })
+    }
+    return render(request, 'mUP_pc/tablas.html', context)
 
 # vistas de creación --------------------------------------------------------
 
@@ -151,13 +188,25 @@ def eliminar_mantenimiento(request, id):
 def mantenimientos_pc(request, id, mant):
     pc = get_object_or_404(PC, id=id)
     tipo_mantenimiento = get_object_or_404(TipoMantenimientoPC, id=mant) 
-    mantenimientos = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    mantenimientos_list = pc.mantenimientopc_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(mantenimientos_list, 10)  # 10 mantenimientos por página
+    try:
+        mantenimientos = paginator.page(page)
+    except PageNotAnInteger:
+        mantenimientos = paginator.page(1)
+    except EmptyPage:
+        mantenimientos = paginator.page(paginator.num_pages)
+    
     context = {
         'pc': pc,
         'tipo_mantenimiento': tipo_mantenimiento,
         'mantenimientos': mantenimientos,
+        'total_mantenimientos': mantenimientos_list.count(),
     }
-    return render(request, 'mUP_pc/mantenimientos_pc.html', context) 
+    return render(request, 'mUP_pc/mantenimientos_pc.html', context)
 
 @login_required
 def mod_mantenimiento_pc(request, id, mant):

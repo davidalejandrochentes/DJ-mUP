@@ -9,16 +9,15 @@ from django.contrib.auth.forms import AuthenticationForm
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
-
-
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # vistas generales ----------------------------------------------------------------------------
 
 @login_required
 def vehiculo(request):
     km_alerta = KmParaAlerta.objects.first().km
-    vehiculos = Vehiculo.objects.filter(marca__icontains=request.GET.get('search', ''))
-    total_vehiculos = vehiculos.count()
+    search_query = request.GET.get('search', '')
+    vehiculos_list = Vehiculo.objects.filter(marca__icontains=search_query)
 
     def crear_alerta(vehiculo, km_restantes_func):
         km_restantes = km_restantes_func()
@@ -36,12 +35,22 @@ def vehiculo(request):
         ]))
 
     alertas_ordenadas = sorted(alertas, key=lambda x: x['km_restantes'])
-    total_alertas = len(alertas_ordenadas)
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(vehiculos_list, 10)  # 10 vehículos por página
+    try:
+        vehiculos = paginator.page(page)
+    except PageNotAnInteger:
+        vehiculos = paginator.page(1)
+    except EmptyPage:
+        vehiculos = paginator.page(paginator.num_pages)
+    
     context = {
         'vehiculos': vehiculos,
-        'total_vehiculos': total_vehiculos,
+        'total_vehiculos': vehiculos_list.count(),
         'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'total_alertas': len(alertas_ordenadas),
     }
     return render(request, 'mUP_vehiculo/vehiculo.html', context)
 
@@ -83,10 +92,20 @@ def alertas(request):
         ]))
 
     alertas_ordenadas = sorted(alertas, key=lambda x: x['km_restantes'])
-    total_alertas = len(alertas_ordenadas)
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(alertas_ordenadas, 10)  # 10 alertas por página
+    try:
+        alertas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        alertas_paginadas = paginator.page(1)
+    except EmptyPage:
+        alertas_paginadas = paginator.page(paginator.num_pages)
+    
     context = {
-        'alertas': alertas_ordenadas,
-        'total_alertas': total_alertas,
+        'alertas': alertas_paginadas,
+        'total_alertas': len(alertas_ordenadas),
         'alert_form': alert_form,
     }
     return render(request, 'mUP_vehiculo/alertas.html', context)
@@ -94,12 +113,25 @@ def alertas(request):
 
 @login_required
 def tabla_mantenimientos(request):
-    vehiculos = Vehiculo.objects.all()
+    vehiculos_list = Vehiculo.objects.prefetch_related('mantenimientovehiculo_set').all()
     tipos_mantenimiento = TipoMantenimientoVehiculo.objects.all()
-    for vehiculo in vehiculos:
+    
+    for vehiculo in vehiculos_list:
         vehiculo.mantenimientos = vehiculo.mantenimientovehiculo_set.all().order_by('-fecha_fin', '-hora_fin')
+    
+    # Implementar paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(vehiculos_list, 10)  # 10 vehículos por página
+    try:
+        vehiculos = paginator.page(page)
+    except PageNotAnInteger:
+        vehiculos = paginator.page(1)
+    except EmptyPage:
+        vehiculos = paginator.page(paginator.num_pages)
+    
     context = {
         'vehiculos': vehiculos,
+        'total_vehiculos': vehiculos_list.count(),
         'tipos_mantenimiento': tipos_mantenimiento,
     }
     return render(request, 'mUP_vehiculo/tablas.html', context) 
@@ -209,11 +241,23 @@ def mantenimientos_vehiculo(request, id, mant):
     if request.method == 'GET':
         vehiculo = get_object_or_404(Vehiculo, id=id)
         tipo_mantenimiento = get_object_or_404(TipoMantenimientoVehiculo, id=mant)
-        mantenimientos = vehiculo.mantenimientovehiculo_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+        mantenimientos_list = vehiculo.mantenimientovehiculo_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+        
+        # Implementar paginación
+        page = request.GET.get('page', 1)
+        paginator = Paginator(mantenimientos_list, 10)  # 10 mantenimientos por página
+        try:
+            mantenimientos = paginator.page(page)
+        except PageNotAnInteger:
+            mantenimientos = paginator.page(1)
+        except EmptyPage:
+            mantenimientos = paginator.page(paginator.num_pages)
+        
         context = {
             'vehiculo': vehiculo,
             'tipo_mantenimiento': tipo_mantenimiento,
             'mantenimientos': mantenimientos,
+            'total_mantenimientos': mantenimientos_list.count(),
         }
         return render(request, 'mUP_vehiculo/manteniminetos.html', context)
 
