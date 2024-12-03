@@ -122,8 +122,6 @@ def eliminar(request, id):
 # fin de vistas generales----------------------------------------------------------------------------------
 
 
-
-
 @login_required
 def eliminar_mantenimiento(request, id):
     mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
@@ -131,241 +129,167 @@ def eliminar_mantenimiento(request, id):
     previous_url = request.META.get('HTTP_REFERER')
     return HttpResponseRedirect(previous_url)
 
-
-
-
 @login_required
 def mantenimientos_maquina_preventivo(request, id):
-    if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
-        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'maquina': maquina,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_maquina/manteniminetos_preventivo.html', context)   
-
-
-
+    maquina = get_object_or_404(Maquina, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
+    mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    context = {
+        'maquina': maquina,
+        'tipo_mantenimiento': tipo_mantenimiento,
+        'mantenimientos': mantenimientos,
+    }
+    return render(request, 'mUP_maquina/manteniminetos_preventivo.html', context)   
 
 @login_required
 def mod_mantenimiento_maquina_preventivo(request, id):
+    mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
+    maquina = mantenimiento.maquina
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2)
+    
     if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
-        maquina = mantenimiento.maquina
         form_mant = MantenimientoMaquinaPreventivoForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'maquina': maquina,
-        }
-        return render(request, 'mUP_maquina/mod_mantenimineto_preventivo.html', context)
+        return render(request, 'mUP_maquina/mod_mantenimineto_preventivo.html', 
+                     {'form_mant': form_mant, 'maquina': maquina})
     
     if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
-        maquina = mantenimiento.maquina
-        form_mant = MantenimientoMaquinaPreventivoForm(request.POST, request.FILES, instance=mantenimiento)
+        form_mant = MantenimientoMaquinaPreventivoForm(
+            request.POST, 
+            request.FILES, 
+            instance=mantenimiento
+        )
+        if not form_mant.is_valid():
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/mod_mantenimineto_preventivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina})
 
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.maquina = maquina
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.partes_y_piezas = ""
-            if 'imagen' in request.FILES:
-                mantenimiento.imagen = request.FILES['imagen']
-            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
-                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
-                context = {
-                    'form_mant': form_mant,
-                    'maquina': maquina,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
-            else:
-                mantenimiento.save()
-                return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'maquina': maquina,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_maquina/mod_mantenimineto_preventivo.html', context)
-
+        if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+            form_mant.add_error('hr_maquina', 
+                'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        mantenimiento = form_mant.save(commit=False)
+        mantenimiento.maquina = maquina
+        mantenimiento.tipo = tipo_mantenimiento
+        mantenimiento.partes_y_piezas = ""
+        if 'imagen' in request.FILES:
+            mantenimiento.imagen = request.FILES['imagen']
+        mantenimiento.save()
+        return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
     return HttpResponse("Method Not Allowed", status=405)
-
-
-
 
 @login_required
 def nuevo_mantenimiento_maquina_preventivo(request, id):
+    maquina = get_object_or_404(Maquina, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2)
+    
     if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
         form_mant = MantenimientoMaquinaPreventivoForm()
-        context = {
-            'form_mant': form_mant,
-            'maquina': maquina,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
+        return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html',
+                     {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
     
     if request.method == 'POST':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=2) 
         form_mant = MantenimientoMaquinaPreventivoForm(request.POST, request.FILES)
-
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.maquina = maquina
-            mantenimiento.tipo = tipo_mantenimiento
-            mantenimiento.partes_y_piezas = ""
-            if 'imagen' in request.FILES:
-                mantenimiento.imagen = request.FILES['imagen'] 
-            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
-                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
-                context = {
-                    'form_mant': form_mant,
-                    'maquina': maquina,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
-            else:
-                mantenimiento.save()
-                return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'maquina': maquina,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html', context)
-
+        if not form_mant.is_valid():
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+            form_mant.add_error('hr_maquina', 
+                'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_preventivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        mantenimiento = form_mant.save(commit=False)
+        mantenimiento.maquina = maquina
+        mantenimiento.tipo = tipo_mantenimiento
+        mantenimiento.partes_y_piezas = ""
+        if 'imagen' in request.FILES:
+            mantenimiento.imagen = request.FILES['imagen']
+        mantenimiento.save()
+        return redirect('mantenimientos_maquina_preventivo', id=maquina.id)
     return HttpResponse("Method Not Allowed", status=405)
-
-
-
 
 @login_required
 def mantenimientos_maquina_correctivo(request, id):
-    if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
-        mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
-        context = {
-            'maquina': maquina,
-            'tipo_mantenimiento': tipo_mantenimiento,
-            'mantenimientos': mantenimientos,
-        }
-        return render(request, 'mUP_maquina/manteniminetos_correctivo.html', context)   
-
-
-
+    maquina = get_object_or_404(Maquina, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
+    mantenimientos = maquina.mantenimientomaquina_set.filter(tipo=tipo_mantenimiento).order_by('-fecha_fin', '-hora_fin')
+    context = {
+        'maquina': maquina,
+        'tipo_mantenimiento': tipo_mantenimiento,
+        'mantenimientos': mantenimientos,
+    }
+    return render(request, 'mUP_maquina/manteniminetos_correctivo.html', context)   
 
 @login_required
 def mod_mantenimiento_maquina_correctivo(request, id):
+    mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
+    maquina = mantenimiento.maquina
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1)
+    
     if request.method == 'GET':
-        mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
-        maquina = mantenimiento.maquina
         form_mant = MantenimientoMaquinaCorrectivoForm(instance=mantenimiento)
-        context = {
-            'form_mant': form_mant,
-            'maquina': maquina,
-        }
-        return render(request, 'mUP_maquina/mod_mantenimineto_correctivo.html', context)
+        return render(request, 'mUP_maquina/mod_mantenimineto_correctivo.html',
+                     {'form_mant': form_mant, 'maquina': maquina})
     
     if request.method == 'POST':
-        mantenimiento = get_object_or_404(MantenimientoMaquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
-        maquina = mantenimiento.maquina
-        form_mant = MantenimientoMaquinaCorrectivoForm(request.POST, request.FILES, instance=mantenimiento)
-
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.maquina = maquina
-            mantenimiento.tipo = tipo_mantenimiento
-
-            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
-                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
-                context = {
-                    'form_mant': form_mant,
-                    'maquina': maquina,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html', context)
-            else:
-                if 'imagen' in request.FILES:
-                    mantenimiento.imagen = request.FILES['imagen'] 
-                mantenimiento.save()
-                return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'maquina': maquina,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_maquina/mod_mantenimineto_correctivo.html', context)
-
+        form_mant = MantenimientoMaquinaCorrectivoForm(
+            request.POST, 
+            request.FILES, 
+            instance=mantenimiento
+        )
+        if not form_mant.is_valid():
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/mod_mantenimineto_correctivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina})
+        if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+            form_mant.add_error('hr_maquina', 
+                'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        mantenimiento = form_mant.save(commit=False)
+        mantenimiento.maquina = maquina
+        mantenimiento.tipo = tipo_mantenimiento
+        if 'imagen' in request.FILES:
+            mantenimiento.imagen = request.FILES['imagen']
+        mantenimiento.save()
+        return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
     return HttpResponse("Method Not Allowed", status=405)
-
-
-
 
 @login_required
 def nuevo_mantenimineto_maquina_correctivo(request, id):
+    maquina = get_object_or_404(Maquina, id=id)
+    tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1)
+    
     if request.method == 'GET':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
         form_mant = MantenimientoMaquinaCorrectivoForm()
-        context = {
-            'form_mant': form_mant,
-            'maquina': maquina,
-            'tipo_mantenimiento': tipo_mantenimiento,
-        }
-        return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html', context)
+        return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html',
+                     {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
     
     if request.method == 'POST':
-        maquina = get_object_or_404(Maquina, id=id)
-        tipo_mantenimiento = get_object_or_404(TipoMantenimientoMaquina, id=1) 
         form_mant = MantenimientoMaquinaCorrectivoForm(request.POST, request.FILES)
 
-        if form_mant.is_valid():
-            mantenimiento = form_mant.save(commit=False)
-            mantenimiento.maquina = maquina
-            mantenimiento.tipo = tipo_mantenimiento
-            
-            if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
-                form_mant.add_error('hr_maquina', 'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
-                context = {
-                    'form_mant': form_mant,
-                    'maquina': maquina,
-                    'tipo_mantenimiento': tipo_mantenimiento,
-                }
-                messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-                return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html', context)
-            else:
-                if 'imagen' in request.FILES:
-                    mantenimiento.imagen = request.FILES['imagen'] 
-                mantenimiento.save()
-                return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
-        else:
-            context = {
-                'form_mant': form_mant,
-                'maquina': maquina,
-                'tipo_mantenimiento': tipo_mantenimiento,
-            }
-            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo") 
-            return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html', context)
-
+        if not form_mant.is_valid():
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        if form_mant.cleaned_data['hr_maquina'] > maquina.horas_máquina_trabajada:
+            form_mant.add_error('hr_maquina', 
+                'Las horas de trabajo del mantenimiento no pueden ser mayores que las horas de trabajo de la máquina.')
+            messages.error(request, "Alguno de los datos introducidos no son válidos, revise nuevamente cada campo")
+            return render(request, 'mUP_maquina/nuevo_mantenimineto_correctivo.html',
+                         {'form_mant': form_mant, 'maquina': maquina, 'tipo_mantenimiento': tipo_mantenimiento})
+        mantenimiento = form_mant.save(commit=False)
+        mantenimiento.maquina = maquina
+        mantenimiento.tipo = tipo_mantenimiento
+        if 'imagen' in request.FILES:
+            mantenimiento.imagen = request.FILES['imagen']    
+        mantenimiento.save()
+        return redirect('mantenimientos_maquina_correctivo', id=maquina.id)
     return HttpResponse("Method Not Allowed", status=405)
-
-
 
 
 # descargas -----------------------------------------------------------------------------------
