@@ -102,19 +102,19 @@ La aplicación estará disponible en `http://127.0.0.1:8000/`.
 ## 🖼️ Galería de la Aplicación
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/1.webp" width="49%" alt="Pantalla 1">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/2.webp" width="49%" alt="Pantalla 2">
+  <img src="static/mUP/1.webp" width="49%" alt="Pantalla 1">
+  <img src="static/mUP/2.webp" width="49%" alt="Pantalla 2">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/3.webp" width="49%" alt="Pantalla 3">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/4.webp" width="49%" alt="Pantalla 4">
+  <img src="static/mUP/3.webp" width="49%" alt="Pantalla 3">
+  <img src="static/mUP/4.webp" width="49%" alt="Pantalla 4">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/5.webp" width="49%" alt="Pantalla 5">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/6.webp" width="49%" alt="Pantalla 6">
+  <img src="static/mUP/5.webp" width="49%" alt="Pantalla 5">
+  <img src="static/mUP/6.webp" width="49%" alt="Pantalla 6">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/7.webp" width="80%" alt="Pantalla 7">
+  <img src="static/mUP/7.webp" width="80%" alt="Pantalla 7">
 </p>
 
 
