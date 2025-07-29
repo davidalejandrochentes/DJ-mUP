@@ -1,97 +1,139 @@
-# mUP - Sistema de Gestión de Mantenimiento Unificado
+<div align="center">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/2.webp" alt="Logo del Proyecto" width="150"/>
+  <h1>mUP - Sistema de Gestión de Mantenimiento</h1>
+  <p>
+    Una aplicación web integral para la gestión y seguimiento de mantenimientos de activos empresariales como vehículos, maquinaria, equipos de cómputo y más.
+  </p>
 
-## Descripción
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python" alt="Python version">
+    <img src="https://img.shields.io/badge/Django-5.1-green?style=for-the-badge&logo=django" alt="Django version">
+    <img src="https://img.shields.io/badge/License-MIT-purple?style=for-the-badge" alt="License">
+  </p>
+</div>
 
-mUP es una aplicación web robusta desarrollada en Django que permite a las empresas gestionar de manera eficiente y visual el mantenimiento de sus activos desde un servidor local. Esta herramienta está diseñada para optimizar el seguimiento y control de mantenimientos en diferentes áreas de la empresa.
+---
 
-## Características Principales
+## 📖 Contexto del Proyecto
 
-- **Gestión de Vehículos**
-  - Registro detallado de vehículos
-  - Control de mantenimientos preventivos y correctivos
-  - Seguimiento de kilometraje
-  - Alertas de mantenimiento programado
+**mUP (Mantenimiento Unificado y Productivo)** fue concebido como una respuesta a los desafíos de gestión en el sector industrial. Desarrollado en estrecha colaboración con **Innovaplast del Ecuador**, el proyecto surge de la necesidad de una solución integral para optimizar sus procesos operativos, permitiendo gestionar de manera eficiente el mantenimiento de maquinaria, vehículos, y otros recursos críticos.
 
-- **Gestión de Herramientas**
-  - Inventario de herramientas
-  - Control de estado y ubicación
-  - Seguimiento de mantenimientos
-  - Registro de responsables
+## ✨ Características Principales
 
-- **Gestión de Áreas de Trabajo**
-  - Control de espacios y ubicaciones
-  - Registro de capacidad y ocupación
-  - Programación de mantenimientos
-  - Seguimiento de estado
+- **Dashboard Intuitivo:** Visualización rápida del estado general de los activos y alertas importantes.
+- **Arquitectura Modular:** Organiza los datos por categorías como áreas, máquinas, vehículos, equipos de cómputo y herramientas.
+- **Alertas Personalizadas:** Sistema de notificaciones en tiempo real con alertas configurables por días, horas o kilómetros, adaptándose a las necesidades de cada activo.
+- **Gestión Detallada de Mantenimiento:**
+    - Diferencia entre mantenimientos **preventivos** y **correctivos**.
+    - Permite adjuntar documentación visual del estado **"antes"** y **"después"** de la intervención.
+- **Informes Flexibles:** Genera y descarga registros en formato **Excel** con opciones de filtrado avanzado para facilitar la toma de decisiones.
+- **Gestión de Inventario:** Incluye un módulo especializado para la gestión de repuestos y consumibles de almacén.
+- **Autenticación Robusta:** Sistema de login que garantiza la seguridad y confidencialidad de la información, restringiendo el acceso al personal autorizado.
 
-- **Gestión de Equipos de Cómputo**
-  - Inventario de equipos
-  - Control de mantenimientos
-  - Seguimiento de estado
-  - Registro de usuarios responsables
+## 🛠️ Módulos del Sistema
 
-## Tecnologías Utilizadas
+| Módulo | Descripción |
+| :--- | :--- |
+| 🚗 **Vehículos** | Gestión de la flota de vehículos, control de mantenimientos, kilometraje y alertas. |
+| 🏭 **Máquinas** | Administración de maquinaria industrial, con seguimiento de mantenimientos preventivos y correctivos. |
+| 💻 **Equipos de Cómputo** | Inventario y seguimiento de PCs, laptops y servidores, incluyendo sus mantenimientos. |
+| 🔧 **Herramientas** | Control de herramientas manuales y eléctricas, su estado y ubicación. |
+| 📦 **Repuestos** | Gestión de inventario de repuestos para todos los activos. |
+| 🏢 **Áreas** | Administración de las áreas físicas de la empresa y sus necesidades de mantenimiento. |
 
-- Django 5.1.1
-- Python
-- SQLite
-- Bootstrap
-- Pillow (Procesamiento de imágenes)
-- OpenPyXL (Exportación de datos)
+## 🚀 Tecnologías Utilizadas
 
-## Requisitos Previos
+| Categoría | Tecnología |
+| :--- | :--- |
+| **Backend** | Python, Django |
+| **Base de Datos** | SQLite (por defecto), PostgreSQL (compatible) |
+| **Frontend** | HTML, CSS, JavaScript, Bootstrap |
+| **Librerías Python** | Pillow, openpyxl |
 
-- Python 3.x
-- pip (Gestor de paquetes de Python)
-- Virtualenv (recomendado)
+## ⚙️ Instalación y Puesta en Marcha
 
-## Instalación
+Sigue estos pasos para configurar el entorno de desarrollo local:
 
-1. Clonar el repositorio:
+**1. Prerrequisitos:**
+- Tener instalado [Python 3.10](https://www.python.org/) o superior.
+- Tener instalado [Git](https://git-scm.com/).
+
+**2. Clonar el Repositorio:**
 ```bash
-git clone [URL_DEL_REPOSITORIO]
+git clone https://github.com/David-Chentes/DJ-mUP.git
+cd DJ-mUP
 ```
 
-2. Crear y activar entorno virtual:
+**3. Crear y Activar un Entorno Virtual:**
 ```bash
+# Para Linux/macOS
+python3 -m venv venv
+source venv/bin/activate
+
+# Para Windows
 python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
+.\venv\Scripts\activate
 ```
 
-3. Instalar dependencias:
+**4. Instalar Dependencias:**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Realizar migraciones:
+**5. Aplicar las Migraciones de la Base de Datos:**
 ```bash
 python manage.py migrate
 ```
 
-5. Crear superusuario:
+**6. Crear un Superusuario:**
+Este usuario tendrá acceso al panel de administración de Django.
 ```bash
 python manage.py createsuperuser
 ```
+Sigue las instrucciones en la terminal para crear tu usuario.
 
-6. Iniciar el servidor:
+**7. Iniciar el Servidor de Desarrollo:**
 ```bash
 python manage.py runserver
 ```
+La aplicación estará disponible en `http://127.0.0.1:8000/`.
 
-## Capturas de Pantalla
+## 🖼️ Galería de la Aplicación
 
-![alt text](static/mUP/1.webp) ![alt text](static/mUP/2.webp) ![alt text](static/mUP/3.webp) ![alt text](static/mUP/4.webp) ![alt text](static/mUP/5.webp) ![alt text](static/mUP/6.webp) ![alt text](static/mUP/7.webp)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/1.webp" width="49%" alt="Pantalla 1">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/2.webp" width="49%" alt="Pantalla 2">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/3.webp" width="49%" alt="Pantalla 3">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/4.webp" width="49%" alt="Pantalla 4">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/5.webp" width="49%" alt="Pantalla 5">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/6.webp" width="49%" alt="Pantalla 6">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/David-Chentes/DJ-mUP/main/static/mUP/7.webp" width="80%" alt="Pantalla 7">
+</p>
 
-## Contribuir
 
-Las contribuciones son bienvenidas. Para contribuir:
+## 🤝 Contribuciones
 
-1. Fork el proyecto
-2. Crea tu rama de características
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+Las contribuciones son el corazón del mundo open source. Cualquier aporte que desees hacer será muy bienvenido.
 
-## Contacto
+1.  Haz un Fork del proyecto.
+2.  Crea tu propia rama (`git checkout -b feature/AmazingFeature`).
+3.  Realiza tus cambios (`git commit -m 'Add some AmazingFeature'`).
+4.  Sube tus cambios a la rama (`git push origin feature/AmazingFeature`).
+5.  Abre un Pull Request.
 
-David Alejandro Chentes Ramos
+## 📄 Licencia
+
+Distribuido bajo la Licencia MIT. Se recomienda crear un archivo `LICENSE` en la raíz del proyecto con el contenido de la licencia.
+
+## 📧 Contacto
+
+David Alejandro Chentes Ramos - davidalejandrochentes@gmail.com
+
+Link del Proyecto: [https://github.com/David-Chentes/DJ-mUP](https://github.com/David-Chentes/DJ-mUP)
